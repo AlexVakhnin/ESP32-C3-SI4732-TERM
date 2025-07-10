@@ -11,17 +11,17 @@ void setup() {
   Serial.println("----------------Start Info-----------------");
   Serial.printf("Total heap:\t%d \r\n", ESP.getHeapSize());
   Serial.printf("Free heap:\t%d \r\n", ESP.getFreeHeap());
-  Serial.println("I2C_SDA= "+String(SDA));
-  Serial.println("I2C_SCL= "+String(SCL));
+  //Serial.println("I2C_SDA= "+String(SDA));
+  //Serial.println("I2C_SCL= "+String(SCL));
   Serial.println("-------------------------------------------");
 
-  radio_setup();
+  //radio_setup();
 
 }
 
 void loop() {
 
-  term_handle();
+  //term_handle();
   //test_term_handle();
 
 }

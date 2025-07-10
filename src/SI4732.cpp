@@ -17,6 +17,8 @@
 
 #include <SI4735.h>
 #include <Wire.h>
+#include <patch_full.h>    // SSB patch for whole SSBRX full download
+
 
 // Pin definitions for ESP32C3
 #define RESET_PIN    8  // GPIO8 connected to RST pin of SI4735
@@ -120,7 +122,7 @@ void term_handle()
     switch (key)
     {
       case '+':
-        rx.volumeUp();
+        rx.volumeUp(); //звук+
         break;
       case '-':
         rx.volumeDown();
