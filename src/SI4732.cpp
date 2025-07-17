@@ -97,26 +97,8 @@ void radio_setup()
     Serial.println(si4735Addr, HEX);
   }
 
-  /*
-  delay(500);
- 
-  rx.setRefClock(32768);           // Ref = 32768Hz
-  rx.setRefClockPrescaler(1);    // (32768 x 1)
-  rx.setup(RESET_PIN, 0, POWER_UP_FM, SI473X_ANALOG_AUDIO, 1);   
-
-  //rx.setup(RESET_PIN, FM_FUNCTION);      // Start in FM mode (Украина=[87.5-108 мГц])
-  rx.setFM(8400, 10800, 9860, 10);      // 84-108 MHz, start at 106.5 MHz
-  delay(500);
-  currentFrequency = previousFrequency = rx.getFrequency();
-  rx.setVolume(80);
-  showStatus();
-*/
-
-
   delay(500);
   rx.setup(RESET_PIN, FM_FUNCTION);
-  // rx.setup(RESET_PIN, -1, 1, SI473X_ANALOG_AUDIO);
-  // Starts defaul radio function and band (FM; from 84 to 108 MHz; 103.9 MHz; step 100kHz)
   rx.setFM(8400, 10800, 9860, 10);
   delay(500);
   currentFrequency = previousFrequency = rx.getFrequency();
@@ -124,7 +106,6 @@ void radio_setup()
   showStatus();
 
 }
-
 
 
 void term_handle()
