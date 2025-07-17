@@ -4,6 +4,7 @@
 extern void radio_setup();
 extern void term_handle();
 extern void test_term_handle();
+extern void disp_setup();
 
 void setup() {
   Serial.begin(115200);
@@ -15,13 +16,14 @@ void setup() {
   //Serial.println("I2C_SCL= "+String(SCL));
   Serial.println("-------------------------------------------");
 
-  //radio_setup();
+  //disp_setup();
+  radio_setup();
 
 }
 
 void loop() {
 
-  //term_handle();
+  term_handle();
   //test_term_handle();
 
 }

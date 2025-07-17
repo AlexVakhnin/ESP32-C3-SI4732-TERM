@@ -3,12 +3,6 @@
   This sketch turns the ESP32C3 and the SI4735 into a small FM/AM receiver
   controlled via the Serial Monitor.
 
-  Connections for a typical ESP32C3 (LUATOS):
-    * RESET    -> GPIO8
-    * SDA      -> GPIO4
-    * SCL      -> GPIO5
-  Connect the audio output pins of the SI4735 to an amplifier or headphone.
-
   Based on the SI4735_01_POC example of this library.
   By PU2CLR, adapted for ESP32C3, 2025.
 
@@ -21,9 +15,9 @@
 
 
 // Pin definitions for ESP32C3
-#define RESET_PIN    8  // GPIO8 connected to RST pin of SI4735
-#define ESP32_I2C_SDA 4 // GPIO4 connected to SDIO (pin 18)
-#define ESP32_I2C_SCL 5 // GPIO5 connected to SCLK (pin 17)
+#define RESET_PIN    2  // GPIO8 connected to RST pin of SI4735
+#define ESP32_I2C_SDA 3 // GPIO4 connected to SDIO (pin 18)
+#define ESP32_I2C_SCL 4 // GPIO5 connected to SCLK (pin 17)
 
 #define AM_FUNCTION 1
 #define FM_FUNCTION 0
@@ -103,13 +97,32 @@ void radio_setup()
     Serial.println(si4735Addr, HEX);
   }
 
+  /*
   delay(500);
-  rx.setup(RESET_PIN, FM_FUNCTION);      // Start in FM mode (Украина=[87.5-108 мГц])
-  rx.setFM(8400, 10800, 10650, 10);      // 84-108 MHz, start at 106.5 MHz
+ 
+  rx.setRefClock(32768);           // Ref = 32768Hz
+  rx.setRefClockPrescaler(1);    // (32768 x 1)
+  rx.setup(RESET_PIN, 0, POWER_UP_FM, SI473X_ANALOG_AUDIO, 1);   
+
+  //rx.setup(RESET_PIN, FM_FUNCTION);      // Start in FM mode (Украина=[87.5-108 мГц])
+  rx.setFM(8400, 10800, 9860, 10);      // 84-108 MHz, start at 106.5 MHz
   delay(500);
   currentFrequency = previousFrequency = rx.getFrequency();
-  rx.setVolume(45);
+  rx.setVolume(80);
   showStatus();
+*/
+
+
+  delay(500);
+  rx.setup(RESET_PIN, FM_FUNCTION);
+  // rx.setup(RESET_PIN, -1, 1, SI473X_ANALOG_AUDIO);
+  // Starts defaul radio function and band (FM; from 84 to 108 MHz; 103.9 MHz; step 100kHz)
+  rx.setFM(8400, 10800, 9860, 10);
+  delay(500);
+  currentFrequency = previousFrequency = rx.getFrequency();
+  rx.setVolume(50);
+  showStatus();
+
 }
 
 
@@ -129,11 +142,16 @@ void term_handle()
         break;
       case 'a':
       case 'A':
-        rx.setAM(520, 1710, 1000, 10);   //AM (520-1700 kHz, start at 1000 kHz, step 10 kHz)
+        rx.setAM(520, 1710, 1386, 1);   //AM-(520-1700 kHz, start at 1000 kHz, step 10 kHz) диапазон СВ
+        //rx.setAM(3500, 4500, 3700, 1);
+        //3500, 4500, 3700, 1
+        //3500, 4500, 3700, 1
         break;
       case 'f':
       case 'F':
-        rx.setFM(8400, 10800, 10650, 10); //FM (84-108 mHz, start at 106.5 MHz, step 0.1 mHz)
+        rx.setFM(8400, 10800, 9860, 10); //FM (84-108 mHz, start at 106.5 MHz, step 0.1 mHz)
+        //rx.setSeekAmRssiThreshold(0);
+        //rx.setSeekAmSNRThreshold(10);
         break;
       case 'U':
       case 'u':
