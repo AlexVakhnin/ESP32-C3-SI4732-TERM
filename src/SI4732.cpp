@@ -22,6 +22,9 @@
 #define AM_FUNCTION 1
 #define FM_FUNCTION 0
 
+extern int bandIdx;
+extern void useBand();
+
 uint16_t currentFrequency;
 uint16_t previousFrequency;
 uint8_t bandwidthIdx = 0;
@@ -36,6 +39,8 @@ void showHelp()
   Serial.println("==================================================");
 }
 
+//*********************************************************************
+//СТАТУС ПЕЧАТЬ
 void showStatus()
 {
   previousFrequency = currentFrequency = rx.getFrequency();
@@ -74,7 +79,8 @@ void showFrequency( uint16_t freq )
   }
 }
 
-
+//***************************************************************************
+//ИНИЦИАЛИЗАЦИЯ
 void radio_setup()
 {
   pinMode(RESET_PIN, OUTPUT);
@@ -99,7 +105,10 @@ void radio_setup()
 
   delay(500);
   rx.setup(RESET_PIN, FM_FUNCTION);
-  rx.setFM(8400, 10800, 9860, 10);
+
+  bandIdx=0; //0-FM
+  useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
+  //rx.setFM(8400, 10800, 9860, 10);
   delay(500);
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(50);
@@ -107,12 +116,14 @@ void radio_setup()
 
 }
 
-
+//***************************************************************************
+//ТЕРМИНАЛ
 void term_handle()
 {
   if (Serial.available() > 0)
   {
-    char key = Serial.read();
+    char key = Serial.read(); //читаем символ с клавиатуры
+    //Serial.println("Key="+String(key));
     switch (key)
     {
       case '+':
@@ -172,7 +183,7 @@ void term_handle()
   }
 
   delay(100);
-  currentFrequency = rx.getCurrentFrequency();
+  currentFrequency = rx.getCurrentFrequency(); //запрос текущей частоты
   if (currentFrequency != previousFrequency)
   {
     previousFrequency = currentFrequency;

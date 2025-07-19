@@ -59,7 +59,7 @@ typedef struct
    Band table
 */
 Band band[] = {
-  {"FM  ", FM_BAND_TYPE, 8400, 10800, 10390, 10}, //УКВ
+  {"FM  ", FM_BAND_TYPE, 8400, 10800, 9860, 10}, //УКВ
   {"LW  ", LW_BAND_TYPE, 100, 510, 300, 1},  //ДВ
   {"AM  ", MW_BAND_TYPE, 520, 1720, 810, 10}, //СВ
   {"160m", SW_BAND_TYPE, 1800, 3500, 1900, 1}, // 160 meters
@@ -81,8 +81,8 @@ Band band[] = {
   {"10m ", SW_BAND_TYPE, 28000, 30000, 28400, 1}
 };
 
-const int lastBand = (sizeof band / sizeof(Band)) - 1;
-int bandIdx = 0;
+const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
+int bandIdx = 0; //текущий индекс
 
 
 /*
