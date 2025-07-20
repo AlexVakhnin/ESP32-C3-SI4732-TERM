@@ -59,21 +59,21 @@ typedef struct
    Band table
 */
 Band band[] = {
-  {"FM  ", FM_BAND_TYPE, 8400, 10800, 9860, 10}, //УКВ
+  {"FM  ", FM_BAND_TYPE, 8400, 10800, 10710, 10}, //УКВ
   {"LW  ", LW_BAND_TYPE, 100, 510, 300, 1},  //ДВ
-  {"AM  ", MW_BAND_TYPE, 520, 1720, 810, 10}, //СВ
+  {"AM  ", MW_BAND_TYPE, 520, 1720, 1385, 5}, //СВ
   {"160m", SW_BAND_TYPE, 1800, 3500, 1900, 1}, // 160 meters
   {"80m ", SW_BAND_TYPE, 3500, 4500, 3700, 1}, // 80 meters
   {"60m ", SW_BAND_TYPE, 4500, 5500, 4850, 5},
   {"49m ", SW_BAND_TYPE, 5600, 6300, 6000, 5},
-  {"41m ", SW_BAND_TYPE, 6800, 7800, 7100, 5}, // 40 meters
-  {"31m ", SW_BAND_TYPE, 9200, 10000, 9600, 5},
+  {"41m ", SW_BAND_TYPE, 6800, 7800, 7295, 5}, // 40 meters
+  {"31m ", SW_BAND_TYPE, 9200, 10000, 9685, 5},
   {"30m ", SW_BAND_TYPE, 10000, 11000, 10100, 1}, // 30 meters
-  {"25m ", SW_BAND_TYPE, 11200, 12500, 11940, 5},
-  {"22m ", SW_BAND_TYPE, 13400, 13900, 13600, 5},
+  {"25m ", SW_BAND_TYPE, 11200, 12500, 12035, 5}, //25
+  {"22m ", SW_BAND_TYPE, 13400, 13900, 13600, 5}, //22
   {"20m ", SW_BAND_TYPE, 14000, 14500, 14200, 1}, // 20 meters
-  {"19m ", SW_BAND_TYPE, 15000, 15900, 15300, 5},
-  {"18m ", SW_BAND_TYPE, 17200, 17900, 17600, 5},
+  {"19m ", SW_BAND_TYPE, 15000, 15900, 15665, 5},
+  {"18m ", SW_BAND_TYPE, 17200, 17900, 17615, 5},
   {"17m ", SW_BAND_TYPE, 18000, 18300, 18100, 1},  // 17 meters
   {"15m ", SW_BAND_TYPE, 21000, 21900, 21200, 1},  // 15 mters
   {"12m ", SW_BAND_TYPE, 24890, 26200, 24940, 1},  // 12 meters
@@ -84,6 +84,14 @@ Band band[] = {
 const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
 int bandIdx = 0; //текущий индекс
 
+
+String band_name(){
+  String s="";
+  s+=String(band[bandIdx].bandName);
+  s+="["+String(band[bandIdx].minimumFreq)+"-";
+  s+=String(band[bandIdx].maximumFreq)+"]";
+  return s;
+}
 
 /*
    This function loads the contents of the ssb_patch_content array into the CI (Si4735)
@@ -129,31 +137,31 @@ void useBand()
   //cleanBfoRdsInfo();
   if (band[bandIdx].bandType == FM_BAND_TYPE) //начальная - 0 (FM)
   {
-    currentMode = FM;
-    rx.setTuneFrequencyAntennaCapacitor(0); //антенный аттенюатор - автоматически
+    //currentMode = FM;
+    //rx.setTuneFrequencyAntennaCapacitor(0); //антенный аттенюатор - автоматически
     rx.setFM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
-    bfoOn = ssbLoaded = false;
+    //bfoOn = ssbLoaded = false;
   }
   else //не FM
   {
-    if (band[bandIdx].bandType == MW_BAND_TYPE || band[bandIdx].bandType == LW_BAND_TYPE)
-      rx.setTuneFrequencyAntennaCapacitor(0); //СВ, ДВ - автомат
-    else
-      rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор
+    //if (band[bandIdx].bandType == MW_BAND_TYPE || band[bandIdx].bandType == LW_BAND_TYPE)
+    //  rx.setTuneFrequencyAntennaCapacitor(0); //СВ, ДВ - автомат
+    //else
+    //  rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор
 
-    if (ssbLoaded)
-    {
-      rx.setSSB(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep, currentMode);
-      rx.setSSBAutomaticVolumeControl(1);
-    }
-    else
-    {
-      currentMode = AM;
-      rx.reset();
+    //if (ssbLoaded)
+    //{
+    //  rx.setSSB(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep, currentMode);
+    //  rx.setSSBAutomaticVolumeControl(1);
+   // }
+    //else
+    //{
+      //currentMode = AM;
+      //rx.reset();
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
-      rx.setAutomaticGainControl(1, 0);
-      bfoOn = false;
-    }
+      //rx.setAutomaticGainControl(1, 0);
+      //bfoOn = false;
+    //}
 
   }
 
@@ -168,8 +176,8 @@ void useBand()
 void bandUp()
 {
   // save the current frequency for the band
-  band[bandIdx].currentFreq = currentFrequency;
-  band[bandIdx].currentStep = currentStep;
+  //band[bandIdx].currentFreq = currentFrequency;
+  //band[bandIdx].currentStep = currentStep;
 
   if (bandIdx < lastBand)
   {
@@ -188,8 +196,8 @@ void bandUp()
 void bandDown()
 {
   // save the current frequency for the band
-  band[bandIdx].currentFreq = currentFrequency;
-  band[bandIdx].currentStep = currentStep;
+  //band[bandIdx].currentFreq = currentFrequency;
+  //band[bandIdx].currentStep = currentStep;
   if (bandIdx > 0)
   {
     bandIdx--;
