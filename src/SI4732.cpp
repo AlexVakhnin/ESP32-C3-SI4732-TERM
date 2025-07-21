@@ -27,11 +27,13 @@ extern void useBand();
 extern String band_name();
 extern void bandUp();
 extern void bandDown();
+extern void disp_status(String strFrequency);
 
 uint16_t currentFrequency;
 uint16_t previousFrequency;
 uint8_t bandwidthIdx = 0;
 const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
+String fr_disp="";
 
 SI4735 rx;
 
@@ -46,6 +48,7 @@ void showHelp()
 //СТАТУС ПЕЧАТЬ
 void showStatus()
 {
+  //String dispfr="";
   previousFrequency = currentFrequency = rx.getFrequency();
   rx.getCurrentReceivedSignalQuality();
   Serial.print("Tuned to "+band_name()+" ");
@@ -54,11 +57,13 @@ void showStatus()
     Serial.print(String(currentFrequency / 100.0, 2));
     Serial.print(" MHz ");
     Serial.print((rx.getCurrentPilot()) ? "STEREO" : "MONO");
+      fr_disp=String(currentFrequency / 100.0, 2)+" MHz "; //для дисплея
   }
   else  //если диапазон AM
   {
     Serial.print(currentFrequency);
     Serial.print(" kHz");
+      fr_disp=String(currentFrequency)+" kHz"; //для дисплея
   }
   Serial.print(" [SNR:"); //отношение сигнал/шум
   Serial.print(rx.getCurrentSNR());
@@ -130,13 +135,17 @@ void term_handle()
     switch (key)
     {
       case 'q':
-        bandIdx=7; //41-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
+        disp_status(fr_disp);
+        Serial.println("Test Display1..");
+        //bandIdx=7; //41-AM
+        //useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
         //rx.setAM(6800, 7800, 7445, 5); //41m
         break;
       case 'w':
-        bandIdx=10; //25-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
+        disp_status("456");
+        Serial.println("Test Display2..");
+        //bandIdx=10; //25-AM
+        //useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
         //rx.setAM(11200, 12500, 12035, 5); //25m
         break;
       case 'e':
@@ -225,27 +234,3 @@ void term_handle()
   }
 }
 
-//функцмя только для тестирования...
-void test_term_handle()
-{
-  if (Serial.available() > 0)
-  {
-    char key = Serial.read();
-    switch (key)
-    {
-      case '+':
-        Serial.println("+");
-        break;
-      case '-':
-        Serial.println("-");
-        break;
-      case '?':
-        showHelp();
-        break;
-      default:
-        break;
-    }
-  }
-
-  delay(100);
-}
