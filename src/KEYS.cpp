@@ -8,6 +8,7 @@
 
 extern SI4735 rx;
 extern void bandUp();
+extern void disp_refresh();
 
 unsigned long keyCurrentTime = 0;  //для вычисления интервалов опроса
 unsigned long keyLastTime = 0;

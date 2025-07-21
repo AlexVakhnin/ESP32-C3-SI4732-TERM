@@ -25,15 +25,22 @@
 extern int bandIdx;
 extern void useBand();
 extern String band_name();
+extern String band_name_d();
 extern void bandUp();
 extern void bandDown();
-extern void disp_status(String strFrequency);
+extern void disp_refresh();
+extern String disp1;
+extern String disp2;
+extern String disp3;
+extern String disp4;
 
 uint16_t currentFrequency;
 uint16_t previousFrequency;
+int currSNR=0;
+int currRSSI=0;
+int currVol=0;
 uint8_t bandwidthIdx = 0;
 const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
-String fr_disp="";
 
 SI4735 rx;
 
@@ -48,31 +55,39 @@ void showHelp()
 //СТАТУС ПЕЧАТЬ
 void showStatus()
 {
-  //String dispfr="";
+  disp1=""; disp2=""; disp3=""; disp4=""; //для печати на дисплей
   previousFrequency = currentFrequency = rx.getFrequency();
+  currVol = rx.getCurrentVolume();
   rx.getCurrentReceivedSignalQuality();
+  currSNR = rx.getCurrentSNR();
+  currRSSI = rx.getCurrentRSSI();
   Serial.print("Tuned to "+band_name()+" ");
+  disp2=band_name_d()+"   ";
   if (rx.isCurrentTuneFM()) //если диапазон FM
   {
     Serial.print(String(currentFrequency / 100.0, 2));
     Serial.print(" MHz ");
     Serial.print((rx.getCurrentPilot()) ? "STEREO" : "MONO");
-      fr_disp=String(currentFrequency / 100.0, 2)+" MHz "; //для дисплея
+      disp1=String(currentFrequency / 100.0, 2)/*+" MHz "*/; //для дисплея
+      disp2+="MHz";
   }
   else  //если диапазон AM
   {
     Serial.print(currentFrequency);
     Serial.print(" kHz");
-      fr_disp=String(currentFrequency)+" kHz"; //для дисплея
+      disp1=String(currentFrequency)/*+" kHz"*/; //для дисплея
+      disp2+="kHz";
   }
   Serial.print(" [SNR:"); //отношение сигнал/шум
-  Serial.print(rx.getCurrentSNR());
+  Serial.print(String(currSNR));
   Serial.print("dB Signal:"); //уровень радиосигнала
-  Serial.print(rx.getCurrentRSSI());
+  Serial.print(String(currRSSI));
   Serial.println("dBuV]");
+  disp3 = "SNR: "+String(currSNR)+"/"+String(currRSSI);
+  disp4 = "Vol: "+String(currVol);
 }
 
-//ЧАСТОТА ПЕЧАТЬ
+//ЧАСТОТА ПЕЧАТЬ (используется для поиска)
 void showFrequency( uint16_t freq )
 {
   if (rx.isCurrentTuneFM())
@@ -135,17 +150,15 @@ void term_handle()
     switch (key)
     {
       case 'q':
-        disp_status(fr_disp);
+        disp_refresh();
         Serial.println("Test Display1..");
         //bandIdx=7; //41-AM
         //useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
         //rx.setAM(6800, 7800, 7445, 5); //41m
         break;
       case 'w':
-        disp_status("456");
-        Serial.println("Test Display2..");
-        //bandIdx=10; //25-AM
-        //useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
+        bandIdx=10; //25-AM
+        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
         //rx.setAM(11200, 12500, 12035, 5); //25m
         break;
       case 'e':
@@ -166,11 +179,17 @@ void term_handle()
         break;
       case '+':
         rx.volumeUp(); //звук+
-        Serial.println("Vol[0-63]="+String(rx.getCurrentVolume()));
+        currVol = rx.getCurrentVolume();
+        Serial.println("Vol[0-63]="+String(currVol));
+        disp4 = "Vol: "+String(currVol);
+        disp_refresh();
         break;
       case '-':
         rx.volumeDown();
-        Serial.println("Vol[0-63]="+String(rx.getCurrentVolume()));
+        currVol = rx.getCurrentVolume();
+        Serial.println("Vol[0-63]="+String(currVol));
+        disp4 = "Vol: "+String(currVol);
+        disp_refresh();
         break;
       case 'a':
       case 'A':
@@ -230,6 +249,7 @@ void term_handle()
   {
     previousFrequency = currentFrequency;
     showStatus(); //печатаем статус , если было изменение частоты
+    disp_refresh();
     delay(300);
   }
 }

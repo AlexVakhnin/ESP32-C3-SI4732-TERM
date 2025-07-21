@@ -92,6 +92,9 @@ String band_name(){
   s+=String(band[bandIdx].maximumFreq)+"]";
   return s;
 }
+String band_name_d(){
+  return String(band[bandIdx].bandName);
+}
 
 /*
    This function loads the contents of the ssb_patch_content array into the CI (Si4735)

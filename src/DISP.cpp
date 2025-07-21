@@ -13,8 +13,12 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 
-void disp_status(String strFrequency);
+void disp_refresh();
 
+String disp1="1";
+String disp2="2";
+String disp3="3";
+String disp4="4";
 
 
 void disp_setup(){
@@ -31,15 +35,24 @@ void disp_setup(){
   // the library initializes this with an Adafruit splash screen.
   display.display();
   display.setTextColor(WHITE);
-  delay(1500);
-  //disp_status("111");
+  delay(500);
 }
 
-void disp_status(String strFrequency){
+void disp_refresh(){
   display.clearDisplay();
-  display.setCursor(20, 20);
-  display.setTextSize(2);  
-  display.println(strFrequency.c_str());
+  display.setTextSize(2);
+
+  display.setCursor(0, 0);
+  display.println(disp1.c_str());
+
+  display.setCursor(0, 16);
+  display.println(disp2.c_str());
+
+  display.setCursor(0, 32);
+  display.println(disp3.c_str());
+
+  display.setCursor(0, 48);
+  display.println(disp4.c_str());
 
   display.display();
 }
