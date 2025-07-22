@@ -593,8 +593,8 @@ void loop()
   // sprintf(buffer,"%d, %d, %d, %d, %d, %d, %d, %d, %d",nTOUCH_BANDWIDTH_BUTTON, nTOUCH_BAND_BUTTON_UP, nTOUCH_BAND_BUTTON_DOWN, nTOUCH_VOL_UP, nTOUCH_VOL_DOWN, nTOUCH_BFO_SWITCH, nTOUCH_AGC_SWITCH, nTOUCH_STEP_SWITCH, nTOUCH_MODE_SWITCH);
   // Serial.println(buffer);
 
-  // Check button commands
-  if ((millis() - elapsedButton) > MIN_ELAPSED_TIME)
+  //--------------------------------Check button commands ---------------------
+  if ((millis() - elapsedButton) > MIN_ELAPSED_TIME) //интервал опроса кнопок
   {
     touch = false;
     // check if some button is pressed
@@ -721,9 +721,9 @@ void loop()
       useBand();
     }
     if (touch) delay(200);
-    elapsedButton = millis();
+    elapsedButton = millis(); //конец обработки кнопок
   }
-
+  //-------------------------------------------------------------------
 
   // Show the current frequency only if it has changed
   if (currentFrequency != previousFrequency)

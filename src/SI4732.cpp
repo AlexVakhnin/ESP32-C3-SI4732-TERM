@@ -16,8 +16,9 @@
 
 // Pin definitions for ESP32C3
 #define RESET_PIN    2  // GPIO8 connected to RST pin of SI4735
-#define ESP32_I2C_SDA 3 // GPIO4 connected to SDIO (pin 18)
-#define ESP32_I2C_SCL 4 // GPIO5 connected to SCLK (pin 17)
+//#define ESP32_I2C_SDA 3
+//#define ESP32_I2C_SCL 4
+//#define TERM_PERIOD 100  //150 ms
 
 #define AM_FUNCTION 1
 #define FM_FUNCTION 0
@@ -33,6 +34,10 @@ extern String disp1;
 extern String disp2;
 extern String disp3;
 extern String disp4;
+void change_freq_handle();
+
+//unsigned long termCurrentTime = 0;  //для вычисления интервалов опроса
+//unsigned long termLastTime = 0;
 
 uint16_t currentFrequency;
 uint16_t previousFrequency;
@@ -44,15 +49,7 @@ const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
 
 SI4735 rx;
 
-
-void showHelp()
-{
-  Serial.println("Commands: F=FM, A=AM, U/D=Freq +/-, S/s=Seek, +=Vol+, -=Vol-, B=BW, 0=Status, ?=Help");
-  Serial.println("==================================================");
-}
-
-//*********************************************************************
-//СТАТУС ПЕЧАТЬ
+//обновляем информацию о состоянии радио, заполняем disp1..disp4 для дисплея
 void showStatus()
 {
   disp1=""; disp2=""; disp3=""; disp4=""; //для печати на дисплей
@@ -87,40 +84,24 @@ void showStatus()
   disp4 = "Vol: "+String(currVol);
 }
 
-//ЧАСТОТА ПЕЧАТЬ (используется для поиска)
-void showFrequency( uint16_t freq )
-{
-  if (rx.isCurrentTuneFM())
-  {
-    Serial.print(String(freq / 100.0, 2));
-    Serial.println(" MHz");
-  }
-  else
-  {
-    Serial.print(freq);
-    Serial.println(" kHz");
-  }
-}
 
-//***************************************************************************
-//ИНИЦИАЛИЗАЦИЯ
+//инициализация микросхемы радио
 void radio_setup()
 {
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
 
-  // setup I2C pins explicitly for ESP32C3
-  Wire.begin(ESP32_I2C_SDA, ESP32_I2C_SCL);
+  //Wire.begin(ESP32_I2C_SDA, ESP32_I2C_SCL); //делается в DISP.cpp !!!
 
   Serial.println("SI4735 ESP32C3 Serial Monitor Demo");
-  showHelp();
+  //showHelp();
 
   // Look for the Si47XX I2C bus address
   int16_t si4735Addr = rx.getDeviceI2CAddress(RESET_PIN);
   if ( si4735Addr == 0 ) {
     Serial.println("Si473X not found!");
     Serial.flush();
-    while (1);
+    while (1); //заглушка, если не нашли адрес SI4732
   } else {
     Serial.print("The SI473X I2C address is 0x");
     Serial.println(si4735Addr, HEX);
@@ -135,122 +116,20 @@ void radio_setup()
   delay(500);
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(50);
+  //showStatus();
+  delay(300);
   showStatus();
-
+  disp_refresh(); //обновить экран дисплея 
 }
 
-//***************************************************************************
-//ТЕРМИНАЛ
-void term_handle()
-{
-  if (Serial.available() > 0)
-  {
-    char key = Serial.read(); //читаем символ с клавиатуры
-    //Serial.println("Key="+String(key));
-    switch (key)
-    {
-      case 'q':
-        disp_refresh();
-        Serial.println("Test Display1..");
-        //bandIdx=7; //41-AM
-        //useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(6800, 7800, 7445, 5); //41m
-        break;
-      case 'w':
-        bandIdx=10; //25-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(11200, 12500, 12035, 5); //25m
-        break;
-      case 'e':
-        bandIdx=11; //22-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(13400, 13900, 13635, 5); //22m
-        break;
-      case 'r':
-        bandIdx=12; //20-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(14000, 14500, 14200, 1); //20m
-        break;
-      case '1':
-        bandDown();
-        break;
-      case '2':
-        bandUp();
-        break;
-      case '+':
-        rx.volumeUp(); //звук+
-        currVol = rx.getCurrentVolume();
-        Serial.println("Vol[0-63]="+String(currVol));
-        disp4 = "Vol: "+String(currVol);
-        disp_refresh();
-        break;
-      case '-':
-        rx.volumeDown();
-        currVol = rx.getCurrentVolume();
-        Serial.println("Vol[0-63]="+String(currVol));
-        disp4 = "Vol: "+String(currVol);
-        disp_refresh();
-        break;
-      case 'a':
-      case 'A':
-        bandIdx=13; //19m
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        rx.setFrequency(15665);//китай
-        //rx.setAM(520, 1710, 1386, 1);   //AM-(520-1700 kHz, start at 1000 kHz, step 10 kHz) диапазон СВ
-        //rx.setAM(3500, 4500, 3700, 1);//80m
-        break;
-      case 'f':
-      case 'F':
-        bandIdx=0; //0-FM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        rx.setFrequency(9860); //проминь
-        //rx.setFM(8400, 10800, 9860, 10); //FM (84-108 mHz, start at 106.5 MHz, step 0.1 mHz)
-        break;
-      case 'U':
-      case 'u':
-        rx.frequencyUp(); //увеличить f на величину шага
-        break;
-      case 'D':
-      case 'd':
-        rx.frequencyDown(); //уменьшить f на величину шага
-        break;
-      case 'B':
-      case 'b':
-        if (!rx.isCurrentTuneFM()) //полоса только для AM !
-        {
-          if (bandwidthIdx > 6) bandwidthIdx = 0;//[0 1 2 3 4 5 6]
-          rx.setBandwidth(bandwidthIdx, 1);
-          Serial.print("AM Filter: ");
-          Serial.print(bandwidth[bandwidthIdx]);
-          Serial.println(" kHz");
-          bandwidthIdx++;
-        }
-        break;
-      case 'S':
-        rx.seekStationProgress(showFrequency, 1);//поиск станции вверх
-        break;
-      case 's':
-        rx.seekStationProgress(showFrequency, 0);//поиск станции вниз
-        break;
-      case '0':
-        showStatus();
-        break;
-      case '?':
-        showHelp();
-        break;
-      default:
-        break;
-    }
-  }
-
-  delay(100);
+//ловим изменение частоты - событие для обновления дисплея..
+void change_freq_handle(){
   currentFrequency = rx.getCurrentFrequency(); //запрос текущей частоты
   if (currentFrequency != previousFrequency)
-  {
-    previousFrequency = currentFrequency;
-    showStatus(); //печатаем статус , если было изменение частоты
-    disp_refresh();
-    delay(300);
-  }
+    {
+      previousFrequency = currentFrequency;
+      delay(300); //время для получения правильного SNR
+      showStatus(); //печатаем статус , если было изменение частоты
+      disp_refresh();
+    }
 }
-
