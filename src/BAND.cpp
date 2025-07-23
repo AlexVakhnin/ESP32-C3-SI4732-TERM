@@ -84,7 +84,7 @@ Band band[] = {
 const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
 int bandIdx = 0; //текущий индекс
 
-
+//название диапазона для терминала
 String band_name(){
   String s="";
   s+=String(band[bandIdx].bandName);
@@ -92,6 +92,8 @@ String band_name(){
   s+=String(band[bandIdx].maximumFreq)+"]";
   return s;
 }
+
+//название диапазона для дисплея
 String band_name_d(){
   return String(band[bandIdx].bandName);
 }
@@ -160,7 +162,7 @@ void useBand()
     //else
     //{
       //currentMode = AM;
-      //rx.reset();
+      //rx.reset(); //если SSB было загружено, то перегрузить приемник..
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
       //rx.setAutomaticGainControl(1, 0);
       //bfoOn = false;

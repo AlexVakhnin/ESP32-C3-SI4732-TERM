@@ -1,12 +1,6 @@
 /*
-  Simple example of using the PU2CLR SI4735 Arduino Library on ESP32C3.
-  This sketch turns the ESP32C3 and the SI4735 into a small FM/AM receiver
-  controlled via the Serial Monitor.
-
-  Based on the SI4735_01_POC example of this library.
-  By PU2CLR, adapted for ESP32C3, 2025.
-
-  This code was genereted Codex (Via ChatGPT) at 2025-06-10.  
+  Based on the SI4735_01_POC example by PU2CLR,
+  adapted for ESP32C3, 2025.
 */
 
 #include <SI4735.h>

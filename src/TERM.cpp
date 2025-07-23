@@ -58,24 +58,16 @@ void term_handle()
       switch (key)
       {
       case 'q':
-        bandIdx=7; //41-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(6800, 7800, 7445, 5); //41m
+        //
         break;
       case 'w':
-        bandIdx=10; //25-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(11200, 12500, 12035, 5); //25m
+        //
         break;
       case 'e':
-        bandIdx=11; //22-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(13400, 13900, 13635, 5); //22m
+        //
         break;
       case 'r':
-        bandIdx=12; //20-AM
-        useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        //rx.setAM(14000, 14500, 14200, 1); //20m
+        //
         break;
       case '1':
         bandDown();
@@ -102,20 +94,16 @@ void term_handle()
         bandIdx=13; //19m
         useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
         rx.setFrequency(15665);//китай
-        //rx.setAM(520, 1710, 1386, 1);   //AM-(520-1700 kHz, start at 1000 kHz, step 10 kHz) диапазон СВ
-        //rx.setAM(3500, 4500, 3700, 1);//80m
         break;
       case 'f':
       case 'F':
         bandIdx=0; //0-FM
         useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
         rx.setFrequency(9860); //проминь
-        //rx.setFM(8400, 10800, 9860, 10); //FM (84-108 mHz, start at 106.5 MHz, step 0.1 mHz)
         break;
       case 'U':
       case 'u':
         rx.frequencyUp(); //увеличить f на величину шага
-        //Serial.println("freq_up");
         break;
       case 'D':
       case 'd':

@@ -4,6 +4,7 @@
 #define KEY_LEFT 0
 #define KEY_RIGHT 1
 #define KEY_UP 5
+#define SW_PIN 8 //кнопка энкодера
 #define KEY_PERIOD 50//100  //150 ms
 
 extern SI4735 rx;

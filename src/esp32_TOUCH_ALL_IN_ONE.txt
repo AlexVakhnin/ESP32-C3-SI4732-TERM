@@ -122,7 +122,7 @@ long elapsedButton = millis();
 long elapsedFrequency = millis();
 
 // Encoder control variables
-volatile int encoderCount = 0;
+volatile int encoderCount = 0; //счетчик для энкодера !!!
 
 // Some variables to check the SI4735 status
 uint16_t currentFrequency;
@@ -200,13 +200,13 @@ int  touchX( int pin) {
 void rotaryEncoder()
 { // rotary encoder events
   uint8_t encoderStatus = encoder.process();
-  if (encoderStatus)
+  if (encoderStatus) //было движение
   {
-    if (encoderStatus == DIR_CW)
+    if (encoderStatus == DIR_CW) //вправо
     {
       encoderCount = 1;
     }
-    else
+    else                          //влево
     {
       encoderCount = -1;
     }
@@ -559,6 +559,7 @@ char buffer[100];
 
 void loop()
 {
+  //=====================================================================================
   // Check if the encoder has moved.
   if (encoderCount != 0)
   {
@@ -579,6 +580,7 @@ void loop()
     }
     encoderCount = 0;
   }
+  //=====================================================================================
 
   nTOUCH_BANDWIDTH_BUTTON = touchX(TOUCH_BANDWIDTH_BUTTON);
   nTOUCH_BAND_BUTTON_UP = touchX(TOUCH_BAND_BUTTON_UP);
