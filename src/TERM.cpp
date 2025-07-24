@@ -9,12 +9,16 @@ extern int bandIdx;
 extern void useBand();
 extern void bandUp();
 extern void bandDown();
-extern int currVol;
-extern uint8_t bandwidthIdx;
+//extern int currVol;
 extern void disp_refresh();
 extern void showStatus();
-extern String disp4;
-extern const char *bandwidth[];
+extern void volume_up();
+extern void volume_down();
+extern void bandwidth_up();
+extern void bandwidth_down();
+//extern String disp4;
+//extern const char *bandwidth[];
+//extern uint8_t bandwidthIdx;
 
 
 void term_setup(){
@@ -76,24 +80,15 @@ void term_handle()
         bandUp();
         break;
       case '+':
-        rx.volumeUp(); //звук+
-        currVol = rx.getCurrentVolume();
-        Serial.println("Vol[0-63]="+String(currVol));
-        disp4 = "Vol: "+String(currVol);
-        disp_refresh();
+        volume_up();
         break;
       case '-':
-        rx.volumeDown();
-        currVol = rx.getCurrentVolume();
-        Serial.println("Vol[0-63]="+String(currVol));
-        disp4 = "Vol: "+String(currVol);
-        disp_refresh();
+        volume_down();
         break;
       case 'a':
       case 'A':
-        bandIdx=13; //19m
+        bandIdx=1; //AM
         useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-        rx.setFrequency(15665);//китай
         break;
       case 'f':
       case 'F':
@@ -110,16 +105,10 @@ void term_handle()
         rx.frequencyDown(); //уменьшить f на величину шага
         break;
       case 'B':
+        bandwidth_up();
+        break;
       case 'b':
-        if (!rx.isCurrentTuneFM()) //полоса только для AM !
-        {
-          if (bandwidthIdx > 6) bandwidthIdx = 0;//[0 1 2 3 4 5 6]
-          rx.setBandwidth(bandwidthIdx, 1);
-          Serial.print("AM Filter: ");
-          Serial.print(bandwidth[bandwidthIdx]);
-          Serial.println(" kHz");
-          bandwidthIdx++;
-        }
+        bandwidth_down();
         break;
       case 'S':
         rx.seekStationProgress(showFrequency, 1);//поиск станции вверх

@@ -15,7 +15,7 @@
 #define USB 2
 #define AM 3
 #define LW 4
-#define SSB 1
+//#define SSB 1
 #define DEFAULT_VOLUME 50 // change it for your favorite sound volume
 
 extern SI4735 rx;
@@ -26,7 +26,7 @@ bool ssbLoaded = false; //флаг SSB
 bool bfoOn = false;
 bool disableAgc = true;
 bool fmStereo = true;
-bool touch = false;
+//bool touch = false;
 
 // Some variables to check the SI4735 status
 extern uint16_t currentFrequency;
@@ -36,7 +36,7 @@ uint8_t currentBFOStep = 25;
 uint8_t volume = DEFAULT_VOLUME;
 
 const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
-uint8_t currentMode = FM; //модуляция
+//uint8_t currentMode = FM; //модуляция
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
 uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
 
@@ -60,25 +60,25 @@ typedef struct
 */
 Band band[] = {
   {"FM  ", FM_BAND_TYPE, 8400, 10800, 10710, 10}, //УКВ
-  {"LW  ", LW_BAND_TYPE, 100, 510, 300, 1},  //ДВ
+  //{"LW  ", LW_BAND_TYPE, 100, 510, 300, 1},  //ДВ
   {"AM  ", MW_BAND_TYPE, 520, 1720, 1385, 5}, //СВ
-  {"160m", SW_BAND_TYPE, 1800, 3500, 1900, 1}, // 160 meters
-  {"80m ", SW_BAND_TYPE, 3500, 4500, 3700, 1}, // 80 meters
+  //{"160m", SW_BAND_TYPE, 1800, 3500, 1900, 1}, // 160 meters
+  //{"80m ", SW_BAND_TYPE, 3500, 4500, 3700, 1}, // 80 meters
   {"60m ", SW_BAND_TYPE, 4500, 5500, 4850, 5},
   {"49m ", SW_BAND_TYPE, 5600, 6300, 6000, 5},
   {"41m ", SW_BAND_TYPE, 6800, 7800, 7295, 5}, // 40 meters
   {"31m ", SW_BAND_TYPE, 9200, 10000, 9440, 5},
-  {"30m ", SW_BAND_TYPE, 10000, 11000, 10100, 1}, // 30 meters
+  //{"30m ", SW_BAND_TYPE, 10000, 11000, 10100, 1}, // 30 meters
   {"25m ", SW_BAND_TYPE, 11200, 12500, 12035, 5}, //25
   {"22m ", SW_BAND_TYPE, 13400, 13900, 13650, 5}, //22
-  {"20m ", SW_BAND_TYPE, 14000, 14500, 14200, 1}, // 20 meters
+  //{"20m ", SW_BAND_TYPE, 14000, 14500, 14200, 1}, // 20 meters
   {"19m ", SW_BAND_TYPE, 15000, 15900, 15665, 5},
   {"18m ", SW_BAND_TYPE, 17200, 17900, 17615, 5},
-  {"17m ", SW_BAND_TYPE, 18000, 18300, 18100, 1},  // 17 meters
-  {"15m ", SW_BAND_TYPE, 21000, 21900, 21200, 1},  // 15 mters
-  {"12m ", SW_BAND_TYPE, 24890, 26200, 24940, 1},  // 12 meters
-  {"CB  ", SW_BAND_TYPE, 26200, 27900, 27500, 1},  // CB band (11 meters)
-  {"10m ", SW_BAND_TYPE, 28000, 30000, 28400, 1}
+  //{"17m ", SW_BAND_TYPE, 18000, 18300, 18100, 1},  // 17 meters
+  //{"15m ", SW_BAND_TYPE, 21000, 21900, 21200, 1},  // 15 mters
+  //{"12m ", SW_BAND_TYPE, 24890, 26200, 24940, 1},  // 12 meters
+  //{"CB  ", SW_BAND_TYPE, 26200, 27900, 27500, 1},  // CB band (11 meters)
+  //{"10m ", SW_BAND_TYPE, 28000, 30000, 28400, 1}
 };
 
 const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке

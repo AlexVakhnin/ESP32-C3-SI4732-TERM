@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <SI4735.h>
 
 #define CLK_PIN 6 //конденсатор 0.1 мкф на землю ОБЯЗАТЕЛЬНО !!!
 #define DT_PIN 7
@@ -7,9 +8,11 @@
 //extern volatile bool tempfail; //флаг для блокировки реле по резкому падению температуры
 //extern bool overheat; //флаг для блокировки реле по перегреву
 //extern boolean flag_apn;
+extern SI4735 rx;
 
 volatile int counter = 0;
 int lastStateCLK;
+volatile int encoderFlag=0;//0-стоим на месте, 1-вправо, -1=влево
 
 //Обработка прерывания
 void IRAM_ATTR rotary_encoder() {
@@ -17,11 +20,13 @@ void IRAM_ATTR rotary_encoder() {
     if (currentStateCLK != lastStateCLK) {
         if (digitalRead(DT_PIN) != currentStateCLK) {
             counter++;
+            encoderFlag=1; //флаг вращали вправо
         } else {
             counter--;
+            encoderFlag=-1; //флаг вращали влево
         }
-        Serial.print("Position: ");
-        Serial.println(counter);
+        //Serial.print("Position: ");
+        //Serial.println(counter);
     }
     lastStateCLK = currentStateCLK;
 }
@@ -37,6 +42,26 @@ void encoder_setup() {
 
 //обрабатываем события поворот влево/вправо
 void encoder_handle() {
+  // Check if the encoder has moved.
+  if (encoderFlag != 0)
+  {
+    //if (bfoOn)
+    //{
+    //  currentBFO = (encoderCount == 1) ? (currentBFO + currentBFOStep) : (currentBFO - currentBFOStep);
+    //}
+    //else
+    //{
+      if (encoderFlag == 1) //флаг вращали вправо
+        rx.frequencyUp();
+      else                  //флаг вращали влево
+        rx.frequencyDown(); 
+
+      // Show the current frequency only if it has changed
+      //delay(30);
+      //currentFrequency = si4735.getFrequency();
+    //}
+    encoderFlag = 0; //сброс флага вправо/влево
+  }
 
 
 

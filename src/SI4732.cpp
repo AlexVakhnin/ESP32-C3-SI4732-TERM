@@ -110,7 +110,6 @@ void radio_setup()
   delay(500);
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(50);
-  //showStatus();
   delay(300);
   showStatus();
   disp_refresh(); //обновить экран дисплея 
@@ -122,8 +121,46 @@ void change_freq_handle(){
   if (currentFrequency != previousFrequency)
     {
       previousFrequency = currentFrequency;
-      delay(300); //время для получения правильного SNR
+      delay(50/*300*/); //время для получения правильного SNR, 
+                        //т.к в цикле идет помеха при обновлении дисплея..
       showStatus(); //печатаем статус , если было изменение частоты
       disp_refresh();
     }
+}
+
+void bandwidth_up() {
+        if (!rx.isCurrentTuneFM()) //полоса только для AM !
+        {
+          if (bandwidthIdx < 6) {bandwidthIdx++;}//[0 1 2 3 4 5 6]
+          else {bandwidthIdx = 0;}
+          rx.setBandwidth(bandwidthIdx, 1);
+          Serial.print("AM Filter: ");
+          Serial.print(bandwidth[bandwidthIdx]);
+          Serial.println(" kHz");         
+        }
+}
+void bandwidth_down() {
+          if (!rx.isCurrentTuneFM()) //полоса только для AM !
+        {
+          if (bandwidthIdx > 0) {bandwidthIdx--;}//[0 1 2 3 4 5 6]
+          else {bandwidthIdx = 6;}
+          rx.setBandwidth(bandwidthIdx, 1);
+          Serial.print("AM Filter: ");
+          Serial.print(bandwidth[bandwidthIdx]);
+          Serial.println(" kHz");         
+        }
+}
+void volume_up() {
+        rx.volumeUp(); //звук+
+        currVol = rx.getCurrentVolume();
+        Serial.println("Vol[0-63]="+String(currVol));
+        disp4 = "Vol: "+String(currVol);
+        disp_refresh();
+}
+void volume_down() {
+        rx.volumeDown();
+        currVol = rx.getCurrentVolume();
+        Serial.println("Vol[0-63]="+String(currVol));
+        disp4 = "Vol: "+String(currVol);
+        disp_refresh();
 }
