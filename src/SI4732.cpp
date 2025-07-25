@@ -28,25 +28,35 @@ extern String disp1;
 extern String disp2;
 extern String disp3;
 extern String disp4;
+extern void fill_menu_string();
 void change_freq_handle();
 
-//unsigned long termCurrentTime = 0;  //для вычисления интервалов опроса
-//unsigned long termLastTime = 0;
+const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
+bool ssbLoaded = false; //флаг SSB
+bool bfoOn = false;
+bool disableAgc = true;
 
 uint16_t currentFrequency;
 uint16_t previousFrequency;
 int currSNR=0;
 int currRSSI=0;
 int currVol=0;
-uint8_t bandwidthIdx = 0;
 const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
+uint8_t bandwidthIdx = 0;
+
+const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
+uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
+
+const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
+uint8_t currentMode = 0; //модуляция
 
 SI4735 rx;
 
-//обновляем информацию о состоянии радио, заполняем disp1..disp4 для дисплея
+//обновляем информацию о состоянии радио, заполняем disp1..disp3 для дисплея
+//вызывается при изменении частоты (обновляем только частоту и SNR на дисплее)
 void showStatus()
 {
-  disp1=""; disp2=""; disp3=""; disp4=""; //для печати на дисплей
+  disp1=""; disp2=""; disp3=""; //для печати на дисплей
   previousFrequency = currentFrequency = rx.getFrequency();
   currVol = rx.getCurrentVolume();
   rx.getCurrentReceivedSignalQuality();
@@ -74,10 +84,10 @@ void showStatus()
   Serial.print("dB Signal:"); //уровень радиосигнала
   Serial.print(String(currRSSI));
   Serial.println("dBuV]");
-  disp3 = "SNR: "+String(currSNR)+"/"+String(currRSSI);
-  disp4 = "Vol: "+String(currVol);
-}
 
+  disp3 = "SNR: "+String(currSNR)+"/"+String(currRSSI);
+  fill_menu_string();
+}
 
 //инициализация микросхемы радио
 void radio_setup()
@@ -128,6 +138,42 @@ void change_freq_handle(){
     }
 }
 
+/*
+   This function loads the contents of the ssb_patch_content array into the CI (Si4735)
+   and starts the radio on SSB mode.
+   Это делается каждый раз при переключении на SSB !
+*/
+void loadSSB()
+{
+  //display.setCursor(0, 2);
+  Serial.println("-->Switching to SSB..");
+
+  rx.reset();
+  rx.queryLibraryId(); // Is it really necessary here? I will check it.
+  rx.patchPowerUp();
+  delay(50);
+  rx.setI2CFastMode(); // Recommended
+  // si4735.setI2CFastModeCustom(500000); // It is a test and may crash.
+  rx.downloadPatch(ssb_patch_content, size_content);
+  rx.setI2CStandardMode(); // goes back to default (100kHz)
+  //cleanBfoRdsInfo(); //очищаем строку дисплея
+
+  // delay(50);
+  // Parameters
+  // AUDIOBW - SSB Audio bandwidth; 0 = 1.2kHz (default); 1=2.2kHz; 2=3kHz; 3=4kHz; 4=500Hz; 5=1kHz;
+  // SBCUTFLT SSB - side band cutoff filter for band passand low pass filter ( 0 or 1)
+  // AVC_DIVIDER  - set 0 for SSB mode; set 3 for SYNC mode.
+  // AVCEN - SSB Automatic Volume Control (AVC) enable; 0=disable; 1=enable (default).
+  // SMUTESEL - SSB Soft-mute Based on RSSI or SNR (0 or 1).
+  // DSP_AFCDIS - DSP AFC Disable or enable; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.
+  rx.setSSBConfig(bwIdxSSB, 1, 0, 0, 0, 1);
+  delay(25);
+  ssbLoaded = true;
+  //display.clear();
+}
+
+
+
 void bandwidth_up() {
         if (!rx.isCurrentTuneFM()) //полоса только для AM !
         {
@@ -137,6 +183,8 @@ void bandwidth_up() {
           Serial.print("AM Filter: ");
           Serial.print(bandwidth[bandwidthIdx]);
           Serial.println(" kHz");         
+          disp4 = "BW: "+String(bandwidth[bandwidthIdx])+"kHz";
+          disp_refresh();
         }
 }
 void bandwidth_down() {
@@ -148,6 +196,8 @@ void bandwidth_down() {
           Serial.print("AM Filter: ");
           Serial.print(bandwidth[bandwidthIdx]);
           Serial.println(" kHz");         
+          disp4 = "BW: "+String(bandwidth[bandwidthIdx])+"kHz";
+          disp_refresh();
         }
 }
 void volume_up() {
@@ -163,4 +213,12 @@ void volume_down() {
         Serial.println("Vol[0-63]="+String(currVol));
         disp4 = "Vol: "+String(currVol);
         disp_refresh();
+}
+void ssb_on(){
+  //...
+  ssbLoaded = true;
+}
+void ssb_off(){
+  //...
+  ssbLoaded = false;
 }

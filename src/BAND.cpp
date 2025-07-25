@@ -1,31 +1,26 @@
 #include <SI4735.h>
-#include <patch_full.h>    // SSB patch for whole SSBRX full download
+//#include <patch_full.h>    // SSB patch for whole SSBRX full download
 
-#define RESET_PIN 12
-#define ESP32_I2C_SDA 21
-#define ESP32_I2C_SCL 22
+//#define RESET_PIN 12
+//#define ESP32_I2C_SDA 21
+//#define ESP32_I2C_SCL 22
 
 #define FM_BAND_TYPE 0
 #define MW_BAND_TYPE 1
 #define SW_BAND_TYPE 2
 #define LW_BAND_TYPE 3
 
-#define FM 0
-#define LSB 1
-#define USB 2
-#define AM 3
-#define LW 4
+//#define FM 0
+//#define LSB 1
+//#define USB 2
+//#define AM 3
+//#define LW 4
 //#define SSB 1
-#define DEFAULT_VOLUME 50 // change it for your favorite sound volume
+//#define DEFAULT_VOLUME 50 // change it for your favorite sound volume
 
 extern SI4735 rx;
 
-const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
-
-bool ssbLoaded = false; //флаг SSB
-bool bfoOn = false;
-bool disableAgc = true;
-bool fmStereo = true;
+//bool fmStereo = true;
 //bool touch = false;
 
 // Some variables to check the SI4735 status
@@ -33,12 +28,7 @@ extern uint16_t currentFrequency;
 extern uint16_t previousFrequency;
 uint8_t currentStep = 1;
 uint8_t currentBFOStep = 25;
-uint8_t volume = DEFAULT_VOLUME;
-
-const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
-//uint8_t currentMode = FM; //модуляция
-const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
-uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
+//uint8_t volume = DEFAULT_VOLUME;
 
 
 //диапазоны
@@ -96,40 +86,6 @@ String band_name(){
 //название диапазона для дисплея
 String band_name_d(){
   return String(band[bandIdx].bandName);
-}
-
-/*
-   This function loads the contents of the ssb_patch_content array into the CI (Si4735)
-   and starts the radio on SSB mode.
-   Это делается каждый раз при переключении на SSB !
-*/
-void loadSSB()
-{
-  //display.setCursor(0, 2);
-  Serial.println("-->Switching to SSB..");
-
-  rx.reset();
-  rx.queryLibraryId(); // Is it really necessary here? I will check it.
-  rx.patchPowerUp();
-  delay(50);
-  rx.setI2CFastMode(); // Recommended
-  // si4735.setI2CFastModeCustom(500000); // It is a test and may crash.
-  rx.downloadPatch(ssb_patch_content, size_content);
-  rx.setI2CStandardMode(); // goes back to default (100kHz)
-  //cleanBfoRdsInfo(); //очищаем строку дисплея
-
-  // delay(50);
-  // Parameters
-  // AUDIOBW - SSB Audio bandwidth; 0 = 1.2kHz (default); 1=2.2kHz; 2=3kHz; 3=4kHz; 4=500Hz; 5=1kHz;
-  // SBCUTFLT SSB - side band cutoff filter for band passand low pass filter ( 0 or 1)
-  // AVC_DIVIDER  - set 0 for SSB mode; set 3 for SYNC mode.
-  // AVCEN - SSB Automatic Volume Control (AVC) enable; 0=disable; 1=enable (default).
-  // SMUTESEL - SSB Soft-mute Based on RSSI or SNR (0 or 1).
-  // DSP_AFCDIS - DSP AFC Disable or enable; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.
-  rx.setSSBConfig(bwIdxSSB, 1, 0, 0, 0, 1);
-  delay(25);
-  ssbLoaded = true;
-  //display.clear();
 }
 
 
@@ -214,7 +170,7 @@ void bandDown()
   useBand();
 }
 
-
+/*
 void radio_ssb_setup()
 {
 
@@ -230,7 +186,7 @@ void radio_ssb_setup()
   //delay(500);
 
   // Splash - Change it for your introduction text.
-  /*
+  
   display.backlight();
   display.setCursor(3, 0);
   display.print("SI4735 on ESP32");
@@ -249,7 +205,7 @@ void radio_ssb_setup()
   // Encoder interrupt
   attachInterrupt(digitalPinToInterrupt(ENCODER_PIN_A), rotaryEncoder, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENCODER_PIN_B), rotaryEncoder, CHANGE);
-*/
+
   // The line below may be necessary to setup I2C pins on ESP32
   Wire.begin(ESP32_I2C_SDA, ESP32_I2C_SCL);
   
@@ -263,4 +219,4 @@ void radio_ssb_setup()
   //display.clear();
   //showStatus();
 }
-
+*/
