@@ -31,21 +31,23 @@ extern String disp4;
 extern void fill_menu_string();
 void change_freq_handle();
 
+//касаемо SSB
 const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 bool ssbLoaded = false; //флаг SSB
 bool bfoOn = false;
 bool disableAgc = true;
+const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
+uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
 
+//текущие параметры
 uint16_t currentFrequency;
 uint16_t previousFrequency;
 int currSNR=0;
 int currRSSI=0;
 int currVol=0;
 const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
-uint8_t bandwidthIdx = 0;
+uint8_t bandwidthIdx = 1; //4 kHz для SW
 
-const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
-uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
 
 const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
 uint8_t currentMode = 0; //модуляция
@@ -53,7 +55,7 @@ uint8_t currentMode = 0; //модуляция
 SI4735 rx;
 
 //обновляем информацию о состоянии радио, заполняем disp1..disp3 для дисплея
-//вызывается при изменении частоты (обновляем только частоту и SNR на дисплее)
+//вызывается при изменении частоты
 void showStatus()
 {
   disp1=""; disp2=""; disp3=""; //для печати на дисплей
@@ -98,9 +100,8 @@ void radio_setup()
   //Wire.begin(ESP32_I2C_SDA, ESP32_I2C_SCL); //делается в DISP.cpp !!!
 
   Serial.println("SI4735 ESP32C3 Serial Monitor Demo");
-  //showHelp();
 
-  // Look for the Si47XX I2C bus address
+  //Автоматически определяем адрес радио i2c
   int16_t si4735Addr = rx.getDeviceI2CAddress(RESET_PIN);
   if ( si4735Addr == 0 ) {
     Serial.println("Si473X not found!");
@@ -114,12 +115,13 @@ void radio_setup()
   delay(500);
   rx.setup(RESET_PIN, FM_FUNCTION);
 
-  bandIdx=0; //0-FM
+  bandIdx=0; //индекс диапазона 0-FM
   useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
   //rx.setFM(8400, 10800, 9860, 10);
   delay(500);
   currentFrequency = previousFrequency = rx.getFrequency();
-  rx.setVolume(50);
+  rx.setVolume(45);
+  rx.setBandwidth(bandwidthIdx, 1); //плдлса 4 kHz
   delay(300);
   showStatus();
   disp_refresh(); //обновить экран дисплея 
@@ -217,8 +219,12 @@ void volume_down() {
 void ssb_on(){
   //...
   ssbLoaded = true;
+  disp4 = "SSB: on";
+  disp_refresh();
 }
 void ssb_off(){
   //...
   ssbLoaded = false;
+  disp4 = "SSB: off";
+  disp_refresh();
 }

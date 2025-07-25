@@ -10,15 +10,12 @@
 #define SW_BAND_TYPE 2
 #define LW_BAND_TYPE 3
 
-//#define FM 0
-//#define LSB 1
-//#define USB 2
-//#define AM 3
-//#define LW 4
-//#define SSB 1
-//#define DEFAULT_VOLUME 50 // change it for your favorite sound volume
+#define LSB 1
+#define USB 2
+
 
 extern SI4735 rx;
+extern bool ssbLoaded;
 
 //bool fmStereo = true;
 //bool touch = false;
@@ -50,29 +47,34 @@ typedef struct
 */
 Band band[] = {
   {"FM  ", FM_BAND_TYPE, 8400, 10800, 10710, 10}, //УКВ
-  //{"LW  ", LW_BAND_TYPE, 100, 510, 300, 1},  //ДВ
   {"AM  ", MW_BAND_TYPE, 520, 1720, 1385, 5}, //СВ
-  //{"160m", SW_BAND_TYPE, 1800, 3500, 1900, 1}, // 160 meters
-  //{"80m ", SW_BAND_TYPE, 3500, 4500, 3700, 1}, // 80 meters
   {"60m ", SW_BAND_TYPE, 4500, 5500, 4850, 5},
   {"49m ", SW_BAND_TYPE, 5600, 6300, 6000, 5},
   {"41m ", SW_BAND_TYPE, 6800, 7800, 7295, 5}, // 40 meters
   {"31m ", SW_BAND_TYPE, 9200, 10000, 9440, 5},
-  //{"30m ", SW_BAND_TYPE, 10000, 11000, 10100, 1}, // 30 meters
   {"25m ", SW_BAND_TYPE, 11200, 12500, 12035, 5}, //25
   {"22m ", SW_BAND_TYPE, 13400, 13900, 13650, 5}, //22
-  //{"20m ", SW_BAND_TYPE, 14000, 14500, 14200, 1}, // 20 meters
   {"19m ", SW_BAND_TYPE, 15000, 15900, 15665, 5},
-  {"18m ", SW_BAND_TYPE, 17200, 17900, 17615, 5},
-  //{"17m ", SW_BAND_TYPE, 18000, 18300, 18100, 1},  // 17 meters
-  //{"15m ", SW_BAND_TYPE, 21000, 21900, 21200, 1},  // 15 mters
-  //{"12m ", SW_BAND_TYPE, 24890, 26200, 24940, 1},  // 12 meters
-  //{"CB  ", SW_BAND_TYPE, 26200, 27900, 27500, 1},  // CB band (11 meters)
-  //{"10m ", SW_BAND_TYPE, 28000, 30000, 28400, 1}
+  {"18m ", SW_BAND_TYPE, 17200, 17900, 17615, 5}
+};
+const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
+int bandIdx = 0; //текущий индекс диапазона FM
+
+Band band_ssb[] = {
+  {"160m", LSB, 1800, 3500, 1810, 1}, // 160 meters
+  {"80m ", LSB, 3500, 4500, 3500, 1}, // 80 meters
+  {"40m ", LSB, 7000, 7500, 7000, 1}, // 40 meters
+  {"30m ", USB, 10000, 11000, 10100, 1}, // 30 meters
+  {"20m ", USB, 14000, 14500, 14000, 1}, // 20 meters
+  {"17m ", USB, 18000, 18300, 18068, 1}, // 17 meters
+  {"15m ", USB, 21000, 21900, 21000, 1}, // 15 mters
+  {"12m ", USB, 24890, 26200, 24890, 1}, // 12 meters
+  {"CB  ", USB, 26200, 27900, 27500, 1}, // CB band (11 meters)
+  {"10m ", USB, 28000, 30000, 28000, 1} //10m
 };
 
-const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
-int bandIdx = 0; //текущий индекс
+const int lastBand_ssb = (sizeof band_ssb / sizeof(Band)) - 1; //количество в списке
+int bandIdx_ssb = 0; //текущий индекс диапазона SSB
 
 //название диапазона для терминала
 String band_name(){
@@ -89,134 +91,59 @@ String band_name_d(){
 }
 
 
-
-/*
-   Switch the radio to current band
-*/
+//установить диапазон FM. SW
 void useBand()
 {
-  //cleanBfoRdsInfo();
-  if (band[bandIdx].bandType == FM_BAND_TYPE) //начальная - 0 (FM)
+  if (band[bandIdx].bandType == FM_BAND_TYPE) //если диапазон - 0 (FM)
   {
-    //currentMode = FM;
-    //rx.setTuneFrequencyAntennaCapacitor(0); //антенный аттенюатор - автоматически
+    rx.setTuneFrequencyAntennaCapacitor(0); //антенный аттенюатор - автоматически
     rx.setFM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
-    //bfoOn = ssbLoaded = false;
   }
-  else //не FM
+  else // для SW диаизона
   {
-    //if (band[bandIdx].bandType == MW_BAND_TYPE || band[bandIdx].bandType == LW_BAND_TYPE)
-    //  rx.setTuneFrequencyAntennaCapacitor(0); //СВ, ДВ - автомат
-    //else
-    //  rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор
+      rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор
+      //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
 
-    //if (ssbLoaded)
-    //{
-    //  rx.setSSB(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep, currentMode);
-    //  rx.setSSBAutomaticVolumeControl(1);
-   // }
-    //else
-    //{
-      //currentMode = AM;
-      //rx.reset(); //если SSB было загружено, то перегрузить приемник..
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
-      //rx.setAutomaticGainControl(1, 0);
-      //bfoOn = false;
-    //}
-
+      //rx.setAutomaticGainControl(1, 0); //AGC-automatic gain control = ВЫКЛ (так хуже..)
+      rx.setAutomaticGainControl(0, 0); //AGC-automatic gain control = ВКЛ !
   }
-
   currentFrequency = band[bandIdx].currentFreq;
   currentStep = band[bandIdx].currentStep;
-  //showStatus(); //обновление всей информации на дисплее..
 }
 
-/*
-   Goes to the next band (see Band table)
-*/
-void bandUp()
-{
-  // save the current frequency for the band
-  //band[bandIdx].currentFreq = currentFrequency;
-  //band[bandIdx].currentStep = currentStep;
+//установить диапазон SSB
+void useBand_ssb() {
+      rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор
+      //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
 
-  if (bandIdx < lastBand)
-  {
-    bandIdx++;
-  }
-  else
-  {
-    bandIdx = 0;
-  }
-  useBand();
+      rx.setSSB(band_ssb[bandIdx_ssb].minimumFreq, band_ssb[bandIdx_ssb].maximumFreq, band_ssb[bandIdx_ssb].currentFreq, band_ssb[bandIdx_ssb].currentStep, band_ssb[bandIdx_ssb].bandType);
+      rx.setSSBAutomaticVolumeControl(1);
+
+      currentFrequency = band_ssb[bandIdx_ssb].currentFreq;
+      currentStep = band_ssb[bandIdx_ssb].currentStep;
 }
 
-/*
-   Goes to the previous band (see Band table)
-*/
-void bandDown()
-{
-  // save the current frequency for the band
-  //band[bandIdx].currentFreq = currentFrequency;
-  //band[bandIdx].currentStep = currentStep;
-  if (bandIdx > 0)
-  {
-    bandIdx--;
+//переход по диапазонам
+void bandUp() {
+  if(ssbLoaded){
+    if (bandIdx_ssb < lastBand_ssb) { bandIdx_ssb++; }
+    else { bandIdx_ssb = 0; }
+    useBand_ssb();
+  } else {
+    if (bandIdx < lastBand) { bandIdx++; }
+    else { bandIdx = 0; }
+    useBand();
   }
-  else
-  {
-    bandIdx = lastBand;
+}
+void bandDown() {
+  if(ssbLoaded){
+    if (bandIdx_ssb > 0) { bandIdx_ssb--; }
+    else { bandIdx_ssb = lastBand_ssb; }
+    useBand_ssb();
+  } else {
+    if (bandIdx > 0) { bandIdx--; }
+    else { bandIdx = lastBand; }
+    useBand();
   }
-  useBand();
 }
-
-/*
-void radio_ssb_setup()
-{
-
-  //Serial.begin(9600);
-  //while (!Serial);
-
-  // Encoder pins
-  //pinMode(ENCODER_PIN_A, INPUT_PULLUP);
-  //pinMode(ENCODER_PIN_B, INPUT_PULLUP);
-
-  //display.init();
-
-  //delay(500);
-
-  // Splash - Change it for your introduction text.
-  
-  display.backlight();
-  display.setCursor(3, 0);
-  display.print("SI4735 on ESP32");
-  display.setCursor(2, 1);
-  display.print("Arduino Library");
-  delay(500);
-  display.setCursor(1, 2);
-  display.print("All in One Radio");
-  delay(500);
-  display.setCursor(4, 3);
-  display.print("By PU2CLR");
-  delay(2000);
-  // end Splash
-  display.clear();
-
-  // Encoder interrupt
-  attachInterrupt(digitalPinToInterrupt(ENCODER_PIN_A), rotaryEncoder, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(ENCODER_PIN_B), rotaryEncoder, CHANGE);
-
-  // The line below may be necessary to setup I2C pins on ESP32
-  Wire.begin(ESP32_I2C_SDA, ESP32_I2C_SCL);
-  
-  rx.setup(RESET_PIN, 1); //0-FM, 1-AM
-
-  // Set up the radio for the current band (see index table variable bandIdx )
-  useBand();
-  currentFrequency = previousFrequency = rx.getFrequency();
-
-  rx.setVolume(volume);
-  //display.clear();
-  //showStatus();
-}
-*/

@@ -1,7 +1,9 @@
 /*
+setTuneFrequencyAntennaCapacitor
+setAutomaticGainControl
+setBandwidth
  Test and validation of the SI4735 Arduino Library with SSB support.
  SSB support has been successfully tested on SI4735-D60 and Si4732-A10 devices.
-
  This example shows you how to setup the radio on SW/SSB by using the Si4735 Arduino Library.
  It uses the Serial Monitor to get the commands and show the information. 
 
@@ -125,10 +127,10 @@ typedef struct
 
 Band band[] = {
     {520, 2000, 810, 1, LSB},
-    {3500, 4000, 3700, 1, LSB},
-    {7000, 7500, 7100, 1, LSB},
-    {11700, 12000, 11940, 1, USB},
-    {14000, 14300, 14200, 1, USB},
+    {3500, 4000, 3700, 1, LSB}, //80m
+    {7000, 7500, 7100, 1, LSB}, //40m
+    {11700, 12000, 11940, 1, USB},//30m
+    {14000, 14300, 14200, 1, USB},//20m
     {18000, 18300, 18100, 1, USB},
     {21000, 21400, 21200, 1, USB},
     {24890, 25000, 24940, 1, USB},
