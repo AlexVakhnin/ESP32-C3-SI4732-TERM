@@ -37,6 +37,8 @@ void change_freq_handle();
 const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 bool ssbLoaded = false; //флаг SSB
 bool bfoOn = false;
+int currentBFO = 0;
+uint8_t currentBFOStep = 25;
 bool disableAgc = true;
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
 uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
@@ -52,7 +54,7 @@ uint8_t bandwidthIdx = 1; //4 kHz для SW
 
 
 const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
-uint8_t currentMode = 0; //модуляция
+uint8_t currentMode = 0; //модуляция 1-LSB 2-USB
 
 SI4735 rx;
 
@@ -68,8 +70,8 @@ void showStatus()
   Serial.print("Band: "+band_name()+" ");
   disp2=band_name_d()+" "; //имя диапазона для дисплея
   if(ssbLoaded){ //если SSB
-    disp2+="SSB";
-    Serial.print("SSB ");
+    disp2+=String(bandModeDesc[currentMode]);
+    Serial.print(String(bandModeDesc[currentMode])+" ");
   }
 
   if (rx.isCurrentTuneFM()) //если диапазон FM
@@ -215,6 +217,19 @@ void volume_down() {
         disp4 = "Vol: "+String(currVol);
         disp_refresh();
 }
+void bfo_up(){
+  if(ssbLoaded){
+    currentBFO = currentBFO + currentBFOStep;
+    rx.setSSBBfo(currentBFO);
+  }
+}
+void bfo_down(){
+  if(ssbLoaded){
+    currentBFO = currentBFO - currentBFOStep;
+    rx.setSSBBfo(currentBFO);
+  }
+}
+
 void ssb_on(){
   loadSSB(); //грузим SSB прошивку!
   bandIdx_ssb=0; //индекс диапазона 0->160m

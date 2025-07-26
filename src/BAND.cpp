@@ -17,15 +17,11 @@
 extern SI4735 rx;
 extern bool ssbLoaded;
 
-//bool fmStereo = true;
-//bool touch = false;
-
 // Some variables to check the SI4735 status
 extern uint16_t currentFrequency;
 extern uint16_t previousFrequency;
+extern uint8_t currentMode; //модуляция 1-LSB 2-USB
 uint8_t currentStep = 1;
-uint8_t currentBFOStep = 25;
-//uint8_t volume = DEFAULT_VOLUME;
 
 
 //диапазоны
@@ -123,6 +119,7 @@ void useBand_ssb() {
 
       currentFrequency = band_ssb[bandIdx_ssb].currentFreq;
       currentStep = band_ssb[bandIdx_ssb].currentStep;
+      currentMode = band_ssb[bandIdx_ssb].bandType; //1-LSB 2-USB
 }
 
 //переход по диапазонам

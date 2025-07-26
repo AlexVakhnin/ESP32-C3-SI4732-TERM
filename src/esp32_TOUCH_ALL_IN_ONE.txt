@@ -109,7 +109,7 @@ const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content
 
 #define SSB 1
 
-const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
+const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "}; //модуляция...
 uint8_t currentMode = FM;
 
 bool bfoOn = false;
