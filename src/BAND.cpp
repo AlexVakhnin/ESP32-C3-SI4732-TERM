@@ -87,7 +87,8 @@ String band_name(){
 
 //название диапазона для дисплея
 String band_name_d(){
-  return String(band[bandIdx].bandName);
+  if (ssbLoaded) return String(band_ssb[bandIdx_ssb].bandName);
+  else return String(band[bandIdx].bandName);
 }
 
 

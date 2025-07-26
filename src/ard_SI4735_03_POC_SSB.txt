@@ -230,7 +230,7 @@ void showFrequency()
   Serial.print(" | Step: ");
   Serial.println(currentStep);
 }
-
+//========================================================================
 void showStatus()
 {
   showSeparator();

@@ -258,10 +258,7 @@ void showVolume()
   display.print(si4735.getCurrentVolume());
 }
 
-/*
-   Shows the BFO current status.
-   Must be called only on SSB mode (LSB or USB)
-*/
+//Shows the BFO current status - реакция на изменение BFO !!!
 void showBFO()
 {
 
@@ -288,8 +285,7 @@ void showBFO()
 
 
 
-// Show current frequency
-
+// Show current frequency - реакция на изменение частоты !!!
 void showFrequency()
 {
   String freq;
@@ -338,13 +334,13 @@ void showFrequency()
   display.print(unit);
 }
 
-/*
-    Show some basic information on display
-*/
+
+//обновление всей информации на дисплее
+//используется при: инициализации, обработке клавиш, переключении диапазонов
 void showStatus()
 {
 
-  showFrequency();
+  showFrequency(); //(реакция на изменение частоты)
 
 
   display.setCursor(13, 1);
@@ -380,11 +376,7 @@ void showStatus()
   showVolume();
 }
 
-//-------------------------------------------------------------------------------------------------------
-/*
-   This function loads the contents of the ssb_patch_content array into the CI (Si4735) and starts the radio on
-   SSB mode.
-*/
+//------------------------------------------ЗАГРУЗЧИК SSB----------------------------------------------
 void loadSSB()
 {
   display.setCursor(0, 2);
@@ -394,10 +386,10 @@ void loadSSB()
   si4735.queryLibraryId(); // Is it really necessary here? I will check it.
   si4735.patchPowerUp();
   delay(50);
-  si4735.setI2CFastMode(); // Recommended
+  si4735.setI2CFastMode(); // Recommended, i2c - высокая скорость
   // si4735.setI2CFastModeCustom(500000); // It is a test and may crash.
   si4735.downloadPatch(ssb_patch_content, size_content);
-  si4735.setI2CStandardMode(); // goes back to default (100kHz)
+  si4735.setI2CStandardMode(); //default (100kHz), i2c - низкая скорость
   cleanBfoRdsInfo();
 
   // delay(50);
@@ -442,7 +434,7 @@ void useBand()
       si4735.setSSB(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep, currentMode);
       si4735.setSSBAutomaticVolumeControl(1);
     }
-    else
+    else //выключаем SSB
     {
       currentMode = AM;
       si4735.reset();
@@ -584,7 +576,8 @@ void loop()
     }
     encoderCount = 0;
   }
-  //=====================================================================================
+
+  //================================ОБРАБОТКА КНОПОК==================================
 
   nTOUCH_BANDWIDTH_BUTTON = touchX(TOUCH_BANDWIDTH_BUTTON);
   nTOUCH_BAND_BUTTON_UP = touchX(TOUCH_BAND_BUTTON_UP);
@@ -599,7 +592,6 @@ void loop()
   // sprintf(buffer,"%d, %d, %d, %d, %d, %d, %d, %d, %d",nTOUCH_BANDWIDTH_BUTTON, nTOUCH_BAND_BUTTON_UP, nTOUCH_BAND_BUTTON_DOWN, nTOUCH_VOL_UP, nTOUCH_VOL_DOWN, nTOUCH_BFO_SWITCH, nTOUCH_AGC_SWITCH, nTOUCH_STEP_SWITCH, nTOUCH_MODE_SWITCH);
   // Serial.println(buffer);
 
-  //--------------------------------Check button commands ---------------------
   if ((millis() - elapsedButton) > MIN_ELAPSED_TIME) //интервал опроса кнопок
   {
     touch = false;
@@ -702,7 +694,7 @@ void loop()
         delay(MIN_ELAPSED_TIME); // waits a little more for releasing the button.
       }
     }
-    else if (nTOUCH_MODE_SWITCH < CAPACITANCE)
+    else if (nTOUCH_MODE_SWITCH < CAPACITANCE) //переключаем режимы AM LSB USB
     {
       touch = true;
       if (currentMode == AM)
@@ -727,18 +719,18 @@ void loop()
       useBand();
     }
     if (touch) delay(200);
-    elapsedButton = millis(); //конец обработки кнопок
+    elapsedButton = millis();
   }
-  //-------------------------------------------------------------------
+  //==============================конец обработки кнопок==========================
 
-  // Show the current frequency only if it has changed
+  // Отслеживаем событие изменения частоты
   if (currentFrequency != previousFrequency)
   {
     previousFrequency = currentFrequency = si4735.getFrequency();;
-    showFrequency();
+    showFrequency(); //реакция на изменение частоты..
   }
 
-  // Show RSSI status only if this condition has changed
+  // Show RSSI status - периодически (нельзя !!!)
   if ((millis() - elapsedRSSI) > MIN_ELAPSED_RSSI_TIME * 12)
   {
     si4735.getCurrentReceivedSignalQuality();
@@ -751,20 +743,20 @@ void loop()
     elapsedRSSI = millis();
   }
 
-  // Show volume level only if this condition has changed
+  // Show volume level - периодически (нельзя !!!)
   if (si4735.getCurrentVolume() != volume)
   {
     volume = si4735.getCurrentVolume();
     showVolume();
   }
 
-  if (currentMode == LSB || currentMode == USB)
+  if (currentMode == LSB || currentMode == USB) //если SSB режим
   {
-    if (currentBFO != previousBFO)
+    if (currentBFO != previousBFO) //отслеживаем изменение BFO !!!
     {
       previousBFO = currentBFO;
       si4735.setSSBBfo(currentBFO);
-      showBFO();
+      showBFO(); //реакция на изменение BFO..
     }
   }
   delay(50);

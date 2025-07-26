@@ -5,7 +5,7 @@
 
 #include <SI4735.h>
 #include <Wire.h>
-#include <patch_full.h>    // SSB patch for whole SSBRX full download
+#include <patch_init.h>    // SSB patch for whole SSBRX full download
 
 
 // Pin definitions for ESP32C3
@@ -19,6 +19,8 @@
 
 extern int bandIdx;
 extern void useBand();
+extern int bandIdx_ssb;
+extern void useBand_ssb();
 extern String band_name();
 extern String band_name_d();
 extern void bandUp();
@@ -54,41 +56,50 @@ uint8_t currentMode = 0; //модуляция
 
 SI4735 rx;
 
-//обновляем информацию о состоянии радио, заполняем disp1..disp3 для дисплея
+//печать информации о состоянии радио, заполнение disp1..disp3 для дисплея
 //вызывается при изменении частоты
 void showStatus()
 {
-  disp1=""; disp2=""; disp3=""; //для печати на дисплей
-  previousFrequency = currentFrequency = rx.getFrequency();
   currVol = rx.getCurrentVolume();
+  //rx.getAutomaticGainControl();
   rx.getCurrentReceivedSignalQuality();
   currSNR = rx.getCurrentSNR();
   currRSSI = rx.getCurrentRSSI();
-  Serial.print("Tuned to "+band_name()+" ");
-  disp2=band_name_d()+"   ";
+  Serial.print("Band: "+band_name()+" ");
+  disp2=band_name_d()+" "; //имя диапазона для дисплея
+  if(ssbLoaded){ //если SSB
+    disp2+="SSB";
+    Serial.print("SSB ");
+  }
+
   if (rx.isCurrentTuneFM()) //если диапазон FM
   {
-    Serial.print(String(currentFrequency / 100.0, 2));
-    Serial.print(" MHz ");
+    Serial.print(String(currentFrequency / 100.0, 2)+" MHz ");
     Serial.print((rx.getCurrentPilot()) ? "STEREO" : "MONO");
-      disp1=String(currentFrequency / 100.0, 2)/*+" MHz "*/; //для дисплея
-      disp2+="MHz";
+      disp1=String(currentFrequency / 100.0, 2)+" MHz"; //для дисплея
   }
   else  //если диапазон AM
   {
-    Serial.print(currentFrequency);
-    Serial.print(" kHz");
-      disp1=String(currentFrequency)/*+" kHz"*/; //для дисплея
-      disp2+="kHz";
+    Serial.print(String(currentFrequency)+" kHz");
+      disp1=String(currentFrequency)+" kHz"; //для дисплея
   }
-  Serial.print(" [SNR:"); //отношение сигнал/шум
-  Serial.print(String(currSNR));
-  Serial.print("dB Signal:"); //уровень радиосигнала
-  Serial.print(String(currRSSI));
-  Serial.println("dBuV]");
+  Serial.println(" [SNR:"+String(currSNR)+"/"+String(currRSSI)+"]"); //сигнал/шум -> терминал
+  disp3 = "SNR: "+String(currSNR)+"/"+String(currRSSI); //сигнал/шум -> дисплей
+  fill_menu_string(); //заполнение строки меню - disp4
+}
 
-  disp3 = "SNR: "+String(currSNR)+"/"+String(currRSSI);
-  fill_menu_string();
+//ловим изменение частоты - событие для обновления дисплея..
+//вызывается из LOOP()
+void change_freq_handle(){
+  currentFrequency = rx.getCurrentFrequency(); //запрос текущей частоты
+  if (currentFrequency != previousFrequency) //ловим событие изменения
+    {
+      previousFrequency = currentFrequency;
+      delay(50/*300*/); //время для получения правильного SNR, 
+                        //т.к в цикле идет помеха при обновлении дисплея..
+      showStatus(); //печатаем статус , если было изменение частоты
+      disp_refresh();
+    }
 }
 
 //инициализация микросхемы радио
@@ -111,33 +122,18 @@ void radio_setup()
     Serial.print("The SI473X I2C address is 0x");
     Serial.println(si4735Addr, HEX);
   }
-
   delay(500);
-  rx.setup(RESET_PIN, FM_FUNCTION);
+  rx.setup(RESET_PIN, FM_FUNCTION); //стартуем радиоприемник
 
   bandIdx=0; //индекс диапазона 0-FM
-  useBand(); //включить диапазон из списка согласно согласно номеру: bandIdx
-  //rx.setFM(8400, 10800, 9860, 10);
+  useBand(); //включить диапазон из списка -> rx.setFM(8400, 10800, 9860, 10);
   delay(500);
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(45);
-  rx.setBandwidth(bandwidthIdx, 1); //плдлса 4 kHz
+  rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
   delay(300);
   showStatus();
   disp_refresh(); //обновить экран дисплея 
-}
-
-//ловим изменение частоты - событие для обновления дисплея..
-void change_freq_handle(){
-  currentFrequency = rx.getCurrentFrequency(); //запрос текущей частоты
-  if (currentFrequency != previousFrequency)
-    {
-      previousFrequency = currentFrequency;
-      delay(50/*300*/); //время для получения правильного SNR, 
-                        //т.к в цикле идет помеха при обновлении дисплея..
-      showStatus(); //печатаем статус , если было изменение частоты
-      disp_refresh();
-    }
 }
 
 /*
@@ -149,6 +145,7 @@ void loadSSB()
 {
   //display.setCursor(0, 2);
   Serial.println("-->Switching to SSB..");
+  disp4="Loading..";disp_refresh();
 
   rx.reset();
   rx.queryLibraryId(); // Is it really necessary here? I will check it.
@@ -159,6 +156,7 @@ void loadSSB()
   rx.downloadPatch(ssb_patch_content, size_content);
   rx.setI2CStandardMode(); // goes back to default (100kHz)
   //cleanBfoRdsInfo(); //очищаем строку дисплея
+  disp4="";disp_refresh();
 
   // delay(50);
   // Parameters
@@ -168,6 +166,7 @@ void loadSSB()
   // AVCEN - SSB Automatic Volume Control (AVC) enable; 0=disable; 1=enable (default).
   // SMUTESEL - SSB Soft-mute Based on RSSI or SNR (0 or 1).
   // DSP_AFCDIS - DSP AFC Disable or enable; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.
+  //AFC = Automatic Frequency Control..
   rx.setSSBConfig(bwIdxSSB, 1, 0, 0, 0, 1);
   delay(25);
   ssbLoaded = true;
@@ -217,14 +216,22 @@ void volume_down() {
         disp_refresh();
 }
 void ssb_on(){
-  //...
-  ssbLoaded = true;
-  disp4 = "SSB: on";
+  loadSSB(); //грузим SSB прошивку!
+  bandIdx_ssb=0; //индекс диапазона 0->160m
+  useBand_ssb(); //включить диапазон SSB
+  showStatus();
   disp_refresh();
 }
 void ssb_off(){
-  //...
+  rx.reset(); //сброс на стандартную прошивку
   ssbLoaded = false;
-  disp4 = "SSB: off";
+  bandIdx=0; //индекс диапазона 0->FM
+  useBand(); //включить диапазон из списка -> rx.setFM(8400, 10800, 9860, 10);
+  delay(100);
+  currentFrequency = previousFrequency = rx.getFrequency();
+  rx.setVolume(45);
+  rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
+  delay(50);
+  showStatus();
   disp_refresh();
 }
