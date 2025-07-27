@@ -221,12 +221,16 @@ void bfo_up(){
   if(ssbLoaded){
     currentBFO = currentBFO + currentBFOStep;
     rx.setSSBBfo(currentBFO);
+    fill_menu_string();
+    disp_refresh();
   }
 }
 void bfo_down(){
   if(ssbLoaded){
     currentBFO = currentBFO - currentBFOStep;
     rx.setSSBBfo(currentBFO);
+    fill_menu_string();
+    disp_refresh();
   }
 }
 

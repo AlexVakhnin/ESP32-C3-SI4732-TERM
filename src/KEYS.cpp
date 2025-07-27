@@ -12,30 +12,34 @@
 #define BANDWIDTH 1
 #define BAND 2
 #define SSB 3
+#define BFO 4
 
 //extern SI4735 rx;
 extern String disp4;
 extern int currVol;
+extern int currentBFO;
 extern void bandUp();
-extern void bandwidth_up();
-extern void volume_up();
-extern void ssb_on();
 extern void bandDown();
+extern void bandwidth_up();
 extern void bandwidth_down();
+extern void volume_up();
 extern void volume_down();
+extern void ssb_on();
 extern void ssb_off();
+extern void bfo_up();
+extern void bfo_down();
 
 extern void disp_refresh();
 extern const char *bandwidth[];
 extern uint8_t bandwidthIdx;
 extern bool ssbLoaded;
 
-const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:"};
-const int lastMenu = 3; //количество в списке меню
+const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:", "BFO:"};
+const int lastMenu = 5-1; //количество в списке меню
 uint8_t menuIdx = 0;
 
 unsigned long keyLastTime = 0; //для вычисления интервалов опроса
-bool kl_old = true; bool kl_old_old = true; //нач.значения
+bool kl_old = true; bool kl_old_old = true; //нач.значения кнопок
 bool kr_old = true; bool kr_old_old = true;
 bool ku_old = true; bool ku_old_old = true;
 bool ks_old = true; bool ks_old_old = true;
@@ -47,7 +51,7 @@ void keys_init(){
   pinMode(KEY_SW, INPUT); //кнопка энкодера
 }
 
-//обновление информации в нижней строке дисплея
+//обновление информации в нижней строке дисплея (меню)
 void fill_menu_string(){
     if(menuIdx==VOLUME){
         disp4 = "Vol: "+String(currVol);
@@ -61,6 +65,11 @@ void fill_menu_string(){
     else if(menuIdx==SSB){
         String ssbonoff = (ssbLoaded) ? ("on") : ("off");
         disp4 = "SSB: "+ssbonoff;
+    }
+    else if(menuIdx==BFO){
+        disp4 = "BFO:";
+        if(currentBFO > 0) disp4+="+"+String(currentBFO);
+        else disp4+=String(currentBFO);
     }
 }
 
@@ -81,6 +90,7 @@ void event_kr_on(){
     if(menuIdx==BANDWIDTH) bandwidth_down();
     if(menuIdx==BAND) bandUp();
     if(menuIdx==SSB) ssb_on();
+    if(menuIdx==BFO) bfo_up();
 }
 //события от нажатий key-left
 void event_kl_on(){
@@ -88,6 +98,7 @@ void event_kl_on(){
     if(menuIdx==BANDWIDTH) bandwidth_up();
     if(menuIdx==BAND) bandDown();
     if(menuIdx==SSB) ssb_off();
+    if(menuIdx==BFO) bfo_down();
 }
 void event_ku_on(){ //кнопка вращения МЕНЮ
     menu_rotate();
