@@ -394,7 +394,7 @@ void loop()
     }
     else if (key == 'G' || key == 'g') // switches on/off the Automatic Gain Control
     {
-      disableAgc = !disableAgc;
+      disableAgc = !disableAgc; //1-off 0-on
       // siwtch on/off ACG; AGC Index = 0. It means Minimum attenuation (max gain)
       si4735.setAutomaticGainControl(disableAgc, currentAGCAtt);
       showStatus();

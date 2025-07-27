@@ -13,11 +13,13 @@
 #define BAND 2
 #define SSB 3
 #define BFO 4
+#define AGC 5
 
 //extern SI4735 rx;
 extern String disp4;
 extern int currVol;
 extern int currentBFO;
+extern bool disableAgc;
 extern void bandUp();
 extern void bandDown();
 extern void bandwidth_up();
@@ -28,14 +30,16 @@ extern void ssb_on();
 extern void ssb_off();
 extern void bfo_up();
 extern void bfo_down();
+extern void agc_on();
+extern void agc_off();
 
 extern void disp_refresh();
 extern const char *bandwidth[];
 extern uint8_t bandwidthIdx;
 extern bool ssbLoaded;
 
-const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:", "BFO:"};
-const int lastMenu = 5-1; //количество в списке меню
+const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:", "BFO:", "AGC:"};
+const int lastMenu = 6-1; //количество в списке меню
 uint8_t menuIdx = 0;
 
 unsigned long keyLastTime = 0; //для вычисления интервалов опроса
@@ -71,6 +75,10 @@ void fill_menu_string(){
         if(currentBFO > 0) disp4+="+"+String(currentBFO);
         else disp4+=String(currentBFO);
     }
+    else if(menuIdx==AGC){
+        String agconoff = (disableAgc) ? ("off") : ("on");
+         disp4 = "AGC: "+agconoff;
+    }
 }
 
 void menu_rotate(){
@@ -91,6 +99,7 @@ void event_kr_on(){
     if(menuIdx==BAND) bandUp();
     if(menuIdx==SSB) ssb_on();
     if(menuIdx==BFO) bfo_up();
+    if(menuIdx==AGC) agc_on();
 }
 //события от нажатий key-left
 void event_kl_on(){
@@ -99,6 +108,7 @@ void event_kl_on(){
     if(menuIdx==BAND) bandDown();
     if(menuIdx==SSB) ssb_off();
     if(menuIdx==BFO) bfo_down();
+    if(menuIdx==AGC) agc_off();
 }
 void event_ku_on(){ //кнопка вращения МЕНЮ
     menu_rotate();

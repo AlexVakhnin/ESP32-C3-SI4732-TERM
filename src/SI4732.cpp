@@ -36,10 +36,10 @@ void change_freq_handle();
 //касаемо SSB
 const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 bool ssbLoaded = false; //флаг SSB
-bool bfoOn = false;
+//bool bfoOn = false;
 int currentBFO = 0;
 uint8_t currentBFOStep = 25;
-bool disableAgc = true;
+bool disableAgc = false; //по умолчанию на КВ включил AGC..
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
 uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
 
@@ -244,13 +244,28 @@ void ssb_on(){
 void ssb_off(){
   rx.reset(); //сброс на стандартную прошивку
   ssbLoaded = false;
+  currentBFO = 0; //в меню что бы был 0
   bandIdx=0; //индекс диапазона 0->FM
   useBand(); //включить диапазон из списка -> rx.setFM(8400, 10800, 9860, 10);
+  //rx.setAutomaticGainControl(1, 0); //в примере это есть..??? (1-AGC disabled)
   delay(100);
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(45);
   rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
   delay(50);
   showStatus();
+  disp_refresh();
+}
+
+void agc_on(){
+  rx.setAutomaticGainControl(0, 0); //0-AGC = ВКЛ; 0-min controll, max gain
+  disableAgc = false;
+  fill_menu_string();
+  disp_refresh();
+}
+void agc_off(){
+  rx.setAutomaticGainControl(1, 0); //AGC-automatic gain control = ВЫКЛ (как в примере, но так хуже..)
+  disableAgc = true;
+  fill_menu_string();
   disp_refresh();
 }

@@ -16,6 +16,7 @@
 
 extern SI4735 rx;
 extern bool ssbLoaded;
+extern bool disableAgc;
 
 // Some variables to check the SI4735 status
 extern uint16_t currentFrequency;
@@ -98,12 +99,14 @@ void useBand()
   }
   else // для SW диаизона
   {
-      rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор
+      rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор (как в примере)
       //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
 
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
-      //rx.setAutomaticGainControl(1, 0); //AGC-automatic gain control = ВЫКЛ (так хуже..)
-      rx.setAutomaticGainControl(0, 0); //AGC-automatic gain control = ВКЛ !
+      //rx.setAutomaticGainControl(1, 0); //AGC-automatic gain control = ВЫКЛ (как в примере, но так хуже..)
+      //disableAgc = true; //для дисплея
+      rx.setAutomaticGainControl(0, 0); //0-AGC = ВКЛ; 0-min controll, max gain
+      disableAgc = false;
   }
   currentFrequency = band[bandIdx].currentFreq;
   currentStep = band[bandIdx].currentStep;
