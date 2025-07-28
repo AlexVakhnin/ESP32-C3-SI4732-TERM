@@ -1,3 +1,8 @@
+/*
+  Based on PU2CLR sources,
+  adapted for ESP32C3, 2025.
+*/
+
 #include <Arduino.h>
 #include <SI4735.h>
 

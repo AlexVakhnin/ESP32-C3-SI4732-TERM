@@ -1,3 +1,8 @@
+/*
+  Based on PU2CLR sources,
+  adapted for ESP32C3, 2025.
+*/
+
 #include <SI4735.h>
 //#include <patch_full.h>    // SSB patch for whole SSBRX full download
 

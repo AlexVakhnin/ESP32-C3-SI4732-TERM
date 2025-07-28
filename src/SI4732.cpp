@@ -1,5 +1,5 @@
 /*
-  Based on the SI4735_01_POC example by PU2CLR,
+  Based on PU2CLR sources,
   adapted for ESP32C3, 2025.
 */
 
