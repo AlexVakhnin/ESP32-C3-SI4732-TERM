@@ -1,5 +1,5 @@
 #include <Arduino.h>
-//#include <SI4735.h>
+#include <SI4735.h>
 
 #define KEY_LEFT 0
 #define KEY_RIGHT 1
@@ -15,11 +15,12 @@
 #define BFO 4
 #define AGC 5
 
-//extern SI4735 rx;
+extern SI4735 rx;
 extern String disp4;
 extern int currVol;
 extern int currentBFO;
 extern bool disableAgc;
+extern int currentAGCAtt;
 extern void bandUp();
 extern void bandDown();
 extern void bandwidth_up();
@@ -30,8 +31,8 @@ extern void ssb_on();
 extern void ssb_off();
 extern void bfo_up();
 extern void bfo_down();
-extern void agc_on();
-extern void agc_off();
+extern void agc_up();
+extern void agc_down();
 
 extern void disp_refresh();
 extern const char *bandwidth[];
@@ -76,8 +77,18 @@ void fill_menu_string(){
         else disp4+=String(currentBFO);
     }
     else if(menuIdx==AGC){
-        String agconoff = (disableAgc) ? ("off") : ("on");
-         disp4 = "AGC: "+agconoff;
+        rx.getAutomaticGainControl();
+        delay(60);
+        bool agc_en = rx.isAgcEnabled(); //true - если AGC включен
+        int agc_attr = rx.getAgcGainIndex(); //коэффициент регулирования внутренний
+        //Serial.println("MENU AGC<="+String(agc_en)+"/"+String(agc_attr));
+        if(agc_en){
+            disp4 ="AGC:"+String(agc_attr) +":"+String(currentAGCAtt);
+        }else {
+            disp4 ="AGC:OFF:"+String(currentAGCAtt);
+        }
+        //String agconoff = (rx.isAgcEnabled()) ? ("on") : ("off");
+         //disp4 = "AGC:"+agconoff+"/"+String(rx.getAgcGainIndex());
     }
 }
 
@@ -99,7 +110,7 @@ void event_kr_on(){
     if(menuIdx==BAND) bandUp();
     if(menuIdx==SSB) ssb_on();
     if(menuIdx==BFO) bfo_up();
-    if(menuIdx==AGC) agc_on();
+    if(menuIdx==AGC) agc_up();
 }
 //события от нажатий key-left
 void event_kl_on(){
@@ -108,7 +119,7 @@ void event_kl_on(){
     if(menuIdx==BAND) bandDown();
     if(menuIdx==SSB) ssb_off();
     if(menuIdx==BFO) bfo_down();
-    if(menuIdx==AGC) agc_off();
+    if(menuIdx==AGC) agc_down();
 }
 void event_ku_on(){ //кнопка вращения МЕНЮ
     menu_rotate();

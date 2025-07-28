@@ -39,7 +39,8 @@ bool ssbLoaded = false; //флаг SSB
 //bool bfoOn = false;
 int currentBFO = 0;
 uint8_t currentBFOStep = 25;
-bool disableAgc = false; //по умолчанию на КВ включил AGC..
+bool disableAgc = 0; //1-выключает AGC (по умолчанию 0-включено)
+int currentAGCAtt = 1; //1-по умолчанию минимальное влияние AGC (max gain)
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
 uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
 
@@ -54,7 +55,7 @@ uint8_t bandwidthIdx = 1; //4 kHz для SW
 
 
 const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
-uint8_t currentMode = 0; //модуляция 1-LSB 2-USB
+uint8_t currentMode = 0; //модуляция 1-LSB 2-USB (для показа на дисплее)
 
 SI4735 rx;
 
@@ -162,13 +163,14 @@ void loadSSB()
 
   // delay(50);
   // Parameters
-  // AUDIOBW - SSB Audio bandwidth; 0 = 1.2kHz (default); 1=2.2kHz; 2=3kHz; 3=4kHz; 4=500Hz; 5=1kHz;
-  // SBCUTFLT SSB - side band cutoff filter for band passand low pass filter ( 0 or 1)
-  // AVC_DIVIDER  - set 0 for SSB mode; set 3 for SYNC mode.
-  // AVCEN - SSB Automatic Volume Control (AVC) enable; 0=disable; 1=enable (default).
-  // SMUTESEL - SSB Soft-mute Based on RSSI or SNR (0 or 1).
-  // DSP_AFCDIS - DSP AFC Disable or enable; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.
+  // 1-AUDIOBW - SSB Audio bandwidth; 0 = 1.2kHz (default); 1=2.2kHz; 2=3kHz; 3=4kHz; 4=500Hz; 5=1kHz;
+  // 2-SBCUTFLT SSB - side band cutoff filter for band passand low pass filter ( 0 or 1)
+  // 3-AVC_DIVIDER  - set 0 for SSB mode; set 3 for SYNC mode.
+  // 4-AVCEN - SSB Automatic Volume Control (AVC) enable; 0=disable; 1=enable (default).
+  // 5-SMUTESEL - SSB Soft-mute Based on RSSI or SNR (0 or 1).
+  // 6-DSP_AFCDIS - DSP AFC Disable or enable; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.(АПЧ-ВЫКЛ)
   //AFC = Automatic Frequency Control..
+  //AVC - выключена, но включается при переключении диапазонов
   rx.setSSBConfig(bwIdxSSB, 1, 0, 0, 0, 1);
   delay(25);
   ssbLoaded = true;
@@ -257,15 +259,25 @@ void ssb_off(){
   disp_refresh();
 }
 
-void agc_on(){
-  rx.setAutomaticGainControl(0, 0); //0-AGC = ВКЛ; 0-min controll, max gain
-  disableAgc = false;
+void agc_up(){
+  if(++currentAGCAtt>36)currentAGCAtt=36; //увеличение с ограничением
+  Serial.println("AGCatt="+String(currentAGCAtt));
+
+  rx.setAutomaticGainControl(0, currentAGCAtt); //включаем - ON
+  disableAgc = 0;
   fill_menu_string();
   disp_refresh();
 }
-void agc_off(){
-  rx.setAutomaticGainControl(1, 0); //AGC-automatic gain control = ВЫКЛ (как в примере, но так хуже..)
-  disableAgc = true;
+void agc_down(){
+  if(--currentAGCAtt<0)currentAGCAtt=0; //уменьшение с ограничением
+  //Serial.println("AGCatt="+String(currentAGCAtt));
+  if(currentAGCAtt==0){
+    rx.setAutomaticGainControl(1, 0); //выключаем - OFF
+    disableAgc = 1;
+  } else {
+    rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом влияния 1-36
+    disableAgc = 0;
+  }
   fill_menu_string();
   disp_refresh();
 }

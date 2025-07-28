@@ -10,6 +10,8 @@
 #define SW_BAND_TYPE 2
 #define LW_BAND_TYPE 3
 
+#define FM 0    // для currentMode
+#define AM 3
 #define LSB 1
 #define USB 2
 
@@ -17,18 +19,17 @@
 extern SI4735 rx;
 extern bool ssbLoaded;
 extern bool disableAgc;
+extern uint8_t currentAGCAtt;
 
 // Some variables to check the SI4735 status
 extern uint16_t currentFrequency;
 extern uint16_t previousFrequency;
 extern uint8_t currentMode; //модуляция 1-LSB 2-USB
+extern uint8_t bandwidthIdx;
 uint8_t currentStep = 1;
 
 
-//диапазоны
-/*
-   Band data structure
-*/
+//структура массивов диапазонов
 typedef struct
 {
   const char *bandName; // Band description
@@ -39,9 +40,7 @@ typedef struct
   uint16_t currentStep; // Defeult step (increment and decrement)
 } Band;
 
-/*
-   Band table
-*/
+//массив для диапазонов FM, SW
 Band band[] = {
   {"FM  ", FM_BAND_TYPE, 8400, 10800, 10710, 10}, //УКВ
   {"AM  ", MW_BAND_TYPE, 520, 1720, 1385, 5}, //СВ
@@ -57,6 +56,7 @@ Band band[] = {
 const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
 int bandIdx = 0; //текущий индекс диапазона FM
 
+//массив для диапазонов HAM SSB
 Band band_ssb[] = {
   {"160m", LSB, 1800, 3500, 1810, 1}, // 160 meters
   {"80m ", LSB, 3500, 4500, 3500, 1}, // 80 meters
@@ -69,7 +69,6 @@ Band band_ssb[] = {
   {"CB  ", USB, 26200, 27900, 27500, 1}, // CB band (11 meters)
   {"10m ", USB, 28000, 30000, 28000, 1} //10m
 };
-
 const int lastBand_ssb = (sizeof band_ssb / sizeof(Band)) - 1; //количество в списке
 int bandIdx_ssb = 0; //текущий индекс диапазона SSB
 
@@ -92,21 +91,23 @@ String band_name_d(){
 //установить диапазон FM. SW
 void useBand()
 {
-  if (band[bandIdx].bandType == FM_BAND_TYPE) //если диапазон - 0 (FM)
+  if (band[bandIdx].bandType == FM_BAND_TYPE) //для FM(УКВ) диапазона
   {
+    currentMode = FM;
     rx.setTuneFrequencyAntennaCapacitor(0); //антенный аттенюатор - автоматически
     rx.setFM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
   }
-  else // для SW диаизона
+  else // для SW(КВ) диаизонов
   {
       rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор (как в примере)
       //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
-
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
-      //rx.setAutomaticGainControl(1, 0); //AGC-automatic gain control = ВЫКЛ (как в примере, но так хуже..)
-      //disableAgc = true; //для дисплея
-      rx.setAutomaticGainControl(0, 0); //0-AGC = ВКЛ; 0-min controll, max gain
+
+      //это настройка AGC(АРУ) - большое влияние на качество сигнала на КВ !!!
+      rx.setAutomaticGainControl(disableAgc, currentAGCAtt); //AGC
+      rx.setBandwidth(bandwidthIdx, 1); //полоса согласно индексу, 1-шумодав включен
       disableAgc = false;
+      currentMode = AM;
   }
   currentFrequency = band[bandIdx].currentFreq;
   currentStep = band[bandIdx].currentStep;
@@ -125,25 +126,31 @@ void useBand_ssb() {
       currentMode = band_ssb[bandIdx_ssb].bandType; //1-LSB 2-USB
 }
 
-//переход по диапазонам
+//переход по диапазонам вверх
 void bandUp() {
   if(ssbLoaded){
-    if (bandIdx_ssb < lastBand_ssb) { bandIdx_ssb++; }
+    band_ssb[bandIdx_ssb].currentFreq = currentFrequency; //сохнаним частоту диапазона SSB
+    if (bandIdx_ssb < lastBand_ssb) { bandIdx_ssb++; } //вращаем вверх диапазон SSB
     else { bandIdx_ssb = 0; }
     useBand_ssb();
   } else {
-    if (bandIdx < lastBand) { bandIdx++; }
+    band[bandIdx].currentFreq = currentFrequency; //сохнаним частоту диапазона
+    if (bandIdx < lastBand) { bandIdx++; } //вращаем вверх диапазон
     else { bandIdx = 0; }
     useBand();
   }
 }
+
+//переход по диапазонам вниз
 void bandDown() {
   if(ssbLoaded){
-    if (bandIdx_ssb > 0) { bandIdx_ssb--; }
+    band_ssb[bandIdx_ssb].currentFreq = currentFrequency; //сохнаним частоту диапазона SSB
+    if (bandIdx_ssb > 0) { bandIdx_ssb--; } //вращаем вниз диапазон SSB
     else { bandIdx_ssb = lastBand_ssb; }
     useBand_ssb();
   } else {
-    if (bandIdx > 0) { bandIdx--; }
+    band[bandIdx].currentFreq = currentFrequency; //сохнаним частоту диапазона
+    if (bandIdx > 0) { bandIdx--; }//вращаем вниз диапазон
     else { bandIdx = lastBand; }
     useBand();
   }
