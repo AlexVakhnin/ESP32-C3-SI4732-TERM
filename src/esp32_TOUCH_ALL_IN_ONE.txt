@@ -2,6 +2,7 @@
 setTuneFrequencyAntennaCapacitor
 setAutomaticGainControl
 setBandwidth
+setSSBSidebandCutoffFilter
 
   SI4735 all in one with SSB Support on ESP32
   It is important to know the SSB support works on SI4735-D60 and SI4732-A10 devices. 
@@ -596,23 +597,23 @@ void loop()
   {
     touch = false;
     // check if some button is pressed
-    if ( nTOUCH_BANDWIDTH_BUTTON < CAPACITANCE)
+    if ( nTOUCH_BANDWIDTH_BUTTON < CAPACITANCE) //полоса..
     {
       touch = true;
-      if (currentMode == LSB || currentMode == USB)
+      if (currentMode == LSB || currentMode == USB) //если SSB
       {
         bwIdxSSB++;
         if (bwIdxSSB > 5)
           bwIdxSSB = 0;
-        si4735.setSSBAudioBandwidth(bwIdxSSB);
+        si4735.setSSBAudioBandwidth(bwIdxSSB); //установка полосы SSB
         // If audio bandwidth selected is about 2 kHz or below, it is recommended to set Sideband Cutoff Filter to 0.
         if (bwIdxSSB == 0 || bwIdxSSB == 4 || bwIdxSSB == 5)
-          si4735.setSSBSidebandCutoffFilter(0);
+          si4735.setSSBSidebandCutoffFilter(0); //выключаем cutoff filter
         else
           si4735.setSSBSidebandCutoffFilter(1);
       }
-      else if (currentMode == AM)
-      {
+      else if (currentMode == AM) //если не SSB
+       {
         bwIdxAM++;
         if (bwIdxAM > 6)
           bwIdxAM = 0;
@@ -641,7 +642,7 @@ void loop()
       si4735.volumeDown();
       delay(MIN_ELAPSED_TIME); // waits a little more for releasing the button.
     }
-    else if (nTOUCH_BFO_SWITCH < CAPACITANCE)
+    else if (nTOUCH_BFO_SWITCH < CAPACITANCE) //кнопка переключатель BFO
     {
       touch = true;
       if (currentMode == LSB || currentMode == USB) {

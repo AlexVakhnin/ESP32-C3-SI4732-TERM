@@ -49,6 +49,7 @@ bool kr_old = true; bool kr_old_old = true;
 bool ku_old = true; bool ku_old_old = true;
 bool ks_old = true; bool ks_old_old = true;
 
+//выводы для опроса кнопок
 void keys_init(){
   pinMode(KEY_LEFT, INPUT_PULLUP); //входы с резисторами на +3.3
   pinMode(KEY_RIGHT, INPUT_PULLUP);
@@ -77,18 +78,15 @@ void fill_menu_string(){
         else disp4+=String(currentBFO);
     }
     else if(menuIdx==AGC){
-        rx.getAutomaticGainControl();
-        delay(60);
+        rx.getAutomaticGainControl(); //для получения параметров AGC
         bool agc_en = rx.isAgcEnabled(); //true - если AGC включен
-        int agc_attr = rx.getAgcGainIndex(); //коэффициент регулирования внутренний
+        int agc_attr = rx.getAgcGainIndex(); //коэффициент усиления внутренний
         //Serial.println("MENU AGC<="+String(agc_en)+"/"+String(agc_attr));
         if(agc_en){
             disp4 ="AGC:"+String(agc_attr) +":"+String(currentAGCAtt);
         }else {
             disp4 ="AGC:OFF:"+String(currentAGCAtt);
         }
-        //String agconoff = (rx.isAgcEnabled()) ? ("on") : ("off");
-         //disp4 = "AGC:"+agconoff+"/"+String(rx.getAgcGainIndex());
     }
 }
 
@@ -101,7 +99,6 @@ void menu_rotate(){
     fill_menu_string();
     disp_refresh();
 }
-
 
 //события от нажатий key-right
 void event_kr_on(){

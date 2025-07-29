@@ -31,7 +31,7 @@ void IRAM_ATTR rotary_encoder() {
     lastStateCLK = currentStateCLK;
 }
 
-//начальные установки
+//начальные установки для энкодера (Interrupt..)
 void encoder_setup() {
     pinMode(CLK_PIN, INPUT);
     pinMode(DT_PIN, INPUT);

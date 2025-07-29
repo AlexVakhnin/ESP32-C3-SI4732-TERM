@@ -160,3 +160,96 @@ void bandDown() {
     useBand();
   }
 }
+
+/*
+
+//Update receiver settings after changing band and modulation
+void applyBandConfiguration(bool extraSSBReset = false)
+{
+    g_si4735.setTuneFrequencyAntennaCapacitor(uint16_t(g_bandIndex == SW_BAND_TYPE));
+    if (g_bandIndex == FM_BAND_TYPE)
+    {
+        g_currentMode = FM;
+        g_si4735.setFM(g_bandList[g_bandIndex].minimumFreq,
+            g_bandList[g_bandIndex].maximumFreq,
+            g_bandList[g_bandIndex].currentFreq,
+            g_tabStepFM[g_bandList[g_bandIndex].currentStepIdx]);
+        g_si4735.setSeekFmLimits(g_bandList[g_bandIndex].minimumFreq, g_bandList[g_bandIndex].maximumFreq);
+        g_si4735.setSeekFmSpacing(1);
+        g_ssbLoaded = false;
+#if USE_RDS
+        setRDSConfig(g_Settings[SettingsIndex::RDSError].param);
+#endif
+        g_si4735.setFifoCount(1);
+        g_bwIndexFM = g_bandList[g_bandIndex].bandwidthIdx;
+        g_si4735.setFmBandwidth(g_bwIndexFM);
+        g_si4735.setFMDeEmphasis(g_Settings[SettingsIndex::DeEmp].param == 0 ? 1 : 2);
+    }
+    else //НЕ FM !!!
+    {
+        uint16_t minFreq = g_bandList[g_bandIndex].minimumFreq;
+        uint16_t maxFreq = g_bandList[g_bandIndex].maximumFreq;
+        if (g_bandIndex == SW_BAND_TYPE)
+        {
+            minFreq = SW_LIMIT_LOW;
+            maxFreq = SW_LIMIT_HIGH;
+        }
+
+        if (g_ssbLoaded) //ПРОШИВКА SSB
+        {
+            g_currentBFO = 0; //сброс BFO при переходе на диапазон !!!
+            if (extraSSBReset)
+                loadSSBPatch();
+
+            //Call this before to call crazy volume after AM when SVC is off
+            g_si4735.setSSBAutomaticVolumeControl(g_Settings[SettingsIndex::SVC].param);
+
+            g_si4735.setSSB(minFreq,
+                maxFreq,
+                g_bandList[g_bandIndex].currentFreq,
+                g_bandList[g_bandIndex].currentStepIdx >= g_amTotalSteps ? 0 : g_tabStep[g_bandList[g_bandIndex].currentStepIdx],
+                g_currentMode == CW ? g_Settings[SettingsIndex::CWSwitch].param + 1 : g_currentMode);
+
+            updateSSBCutoffFilter();
+            g_si4735.setSSBAutomaticVolumeControl(g_Settings[SettingsIndex::SVC].param);
+            g_si4735.setSSBDspAfc(g_Settings[SettingsIndex::Sync].param == 1 ? 0 : 1);
+            g_si4735.setSSBAvcDivider(g_Settings[SettingsIndex::Sync].param == 0 ? 0 : 3); //Set Sync mode
+            g_si4735.setAmSoftMuteMaxAttenuation(g_Settings[SettingsIndex::SoftMute].param);
+            g_si4735.setSSBAudioBandwidth(g_currentMode == CW ? g_bandwidthSSB[0].idx : g_bandwidthSSB[g_bwIndexSSB].idx);
+            updateBFO();
+            g_si4735.setSSBSoftMute(g_Settings[SettingsIndex::SSM].param);
+        }
+        else //НЕ SSB
+        {
+            g_currentMode = AM;
+            g_si4735.setAM(minFreq,
+                maxFreq,
+                g_bandList[g_bandIndex].currentFreq,
+                g_bandList[g_bandIndex].currentStepIdx >= g_amTotalSteps ? 0 : g_tabStep[g_bandList[g_bandIndex].currentStepIdx]);
+            g_si4735.setAmSoftMuteMaxAttenuation(g_Settings[SettingsIndex::SoftMute].param);
+            g_bwIndexAM = g_bandList[g_bandIndex].bandwidthIdx;
+            g_si4735.setBandwidth(g_bandwidthAM[g_bwIndexAM].idx, 1);
+        }
+
+        agcSetFunc();
+        g_si4735.setAvcAmMaxGain(g_Settings[SettingsIndex::AutoVolControl].param);
+        g_si4735.setSeekAmLimits(minFreq, maxFreq);
+        g_si4735.setSeekAmSpacing((g_bandList[g_bandIndex].currentStepIdx >= g_amTotalSteps) ? 1 : g_tabStep[g_bandList[g_bandIndex].currentStepIdx]);
+    }
+
+    g_currentFrequency = g_bandList[g_bandIndex].currentFreq;
+    if (g_currentMode == FM)
+        g_FMStepIndex = g_bandList[g_bandIndex].currentStepIdx;
+    else
+        g_stepIndex = g_bandList[g_bandIndex].currentStepIdx;
+
+    if ((g_bandIndex == LW_BAND_TYPE || g_bandIndex == MW_BAND_TYPE)
+        && g_stepIndex > g_amTotalStepsSSB)
+        g_stepIndex = g_amTotalStepsSSB;
+
+    if (!g_settingsActive)
+        showStatus(true);
+    resetEepromDelay();
+}
+
+*/

@@ -9,7 +9,6 @@
 
 extern void radio_setup();
 extern void term_handle();
-//extern void test_term_handle();
 extern void disp_setup();
 extern void keys_init();
 extern void keys_handle();
@@ -19,28 +18,22 @@ extern void change_freq_handle();
 
 void setup() {
   Serial.begin(115200);
-  delay(10000);//delay(10000);  //10 sec для отладки !
+  delay(5000);//delay(10000);  //10 sec для отладки !
   Serial.println("----------------Start Info-----------------");
   Serial.printf("Total heap:\t%d \r\n", ESP.getHeapSize());
   Serial.printf("Free heap:\t%d \r\n", ESP.getFreeHeap());
-  //Serial.println("I2C_SDA= "+String(SDA));
-  //Serial.println("I2C_SCL= "+String(SCL));
   Serial.println("-------------------------------------------");
 
-  disp_setup();
+  disp_setup(); //1 (init i2c pins)
   keys_init();
   encoder_setup();
-  radio_setup();
-  //disp_setup();
-
+  radio_setup(); //2
 }
 
 void loop() {
-
-  term_handle(); //события от клавиатуры терминала
-  keys_handle(); //события от кнопок
-  encoder_handle(); //события от поворота энкодера
-  change_freq_handle(); //реакция на изменение частоты приемника
-
+  term_handle(); //события от клавиатуры терминала T=100
+  keys_handle(); //события от кнопок T=50
+  encoder_handle(); //события от поворота энкодера T=0 (по прерыванию)
+  change_freq_handle(); //реакция на изменение частоты приемника T=0 + delay(30)
 }
 
