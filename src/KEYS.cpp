@@ -17,10 +17,10 @@
 
 extern SI4735 rx;
 extern String disp4;
-extern int currVol;
+extern uint8_t currVol;
 extern int currentBFO;
-extern bool disableAgc;
-extern int currentAGCAtt;
+//extern uint8_t disableAgc;
+extern uint8_t currentAGCAtt;
 extern void bandUp();
 extern void bandDown();
 extern void bandwidth_up();
@@ -36,7 +36,9 @@ extern void agc_down();
 
 extern void disp_refresh();
 extern const char *bandwidth[];
+extern const char *bandwidthSSB[];
 extern uint8_t bandwidthIdx;
+extern uint8_t bwIdxSSB;
 extern bool ssbLoaded;
 
 const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:", "BFO:", "AGC:"};
@@ -63,7 +65,11 @@ void fill_menu_string(){
         disp4 = "Vol: "+String(currVol);
     }
     else if(menuIdx==BANDWIDTH){
-        disp4 = "BW: "+String(bandwidth[bandwidthIdx])+"kHz";
+        if(ssbLoaded){
+            disp4 = "BW: "+String(bandwidthSSB[bwIdxSSB])+"kHz";
+        } else {
+            disp4 = "BW: "+String(bandwidth[bandwidthIdx])+"kHz";
+        }
     }
     else if(menuIdx==BAND){
         disp4 = "Band: +/-";
@@ -81,7 +87,7 @@ void fill_menu_string(){
         rx.getAutomaticGainControl(); //для получения параметров AGC
         bool agc_en = rx.isAgcEnabled(); //true - если AGC включен
         int agc_attr = rx.getAgcGainIndex(); //коэффициент усиления внутренний
-        //Serial.println("MENU AGC<="+String(agc_en)+"/"+String(agc_attr));
+        //Serial.println("fill_menu_string(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
         if(agc_en){
             disp4 ="AGC:"+String(agc_attr) +":"+String(currentAGCAtt);
         }else {

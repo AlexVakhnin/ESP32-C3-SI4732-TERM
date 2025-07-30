@@ -5,7 +5,8 @@
 
 #include <SI4735.h>
 #include <Wire.h>
-#include <patch_init.h>    // SSB patch for whole SSBRX full download
+//#include <patch_init.h>    // SSB patch for whole SSBRX full download
+#include <patch_full.h>
 
 // Pin definitions for ESP32C3
 #define RESET_PIN    2  // GPIO8 connected to RST pin of SI4735
@@ -35,17 +36,17 @@ const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content
 bool ssbLoaded = false; //флаг SSB
 int currentBFO = 0;
 uint8_t currentBFOStep = 25;
-bool disableAgc = 0; //1-выключает AGC (по умолчанию 0-включено)
-int currentAGCAtt = 1; //1-по умолчанию минимальное влияние AGC (max gain)
+//uint8_t disableAgc = 0; //1-выключает AGC (по умолчанию 0-включено)
+uint8_t currentAGCAtt = 0; //0-по умолчанию минимальное влияние AGC (max gain)
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
-uint8_t bwIdxSSB = 2; //полоса пропускания сигнала
+uint8_t bwIdxSSB = 2; //3 kHz полоса пропускания сигнала для SSB
 
 //текущие параметры
 uint16_t currentFrequency;
 uint16_t previousFrequency;
 int currSNR=0;
 int currRSSI=0;
-int currVol=0;
+uint8_t currVol=0;
 const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
 uint8_t bandwidthIdx = 1; //4 kHz для SW
 
@@ -94,7 +95,8 @@ void change_freq_handle(){
       previousFrequency = currentFrequency;
       delay(30/*300*/); //время для получения правильного SNR, AGC(для меню AGC) 
                         //т.к если делать в цикле, то идет помеха при обновлении дисплея..
-      showStatus(); //обновим дисплей
+      if(ssbLoaded) currentAGCAtt=0; //т.к. SSB при изменении частоты сам включает AGC...
+      showStatus(); //обновим дисплей полностью
       disp_refresh();
     }
 }
@@ -160,32 +162,62 @@ void loadSSB()
   //AFC = Automatic Frequency Control..
   //AVC - выключена, но включается при переключении диапазонов
   //g_si4735.setSSBConfig(g_bandwidthSSB[g_bwIndexSSB].idx, 1, 0, 1, 0, 1); //так в ats-20
-  rx.setSSBConfig(bwIdxSSB, 1, 0, 0, 0, 1);
+  rx.setSSBConfig(bwIdxSSB, 1, 0, 1, 0, 1);
   delay(25);
   ssbLoaded = true; //флаг SSB
 }
 
-void bandwidth_up() {
+void bandwidth_am_up() {
         if (!rx.isCurrentTuneFM()) //полоса только для AM !
         {
           if (bandwidthIdx < 6) {bandwidthIdx++;}//[0 1 2 3 4 5 6]
           else {bandwidthIdx = 0;}
           rx.setBandwidth(bandwidthIdx, 1);
-          Serial.print("BW: "+String(bandwidth[bandwidthIdx])+" kHz");
+          Serial.println("BW: "+String(bandwidth[bandwidthIdx])+" kHz");
           fill_menu_string(); //обновить нижнюю строку дисплея (меню)
           disp_refresh();
         }
 }
-void bandwidth_down() {
+void bandwidth_am_down() {
         if (!rx.isCurrentTuneFM()) //полоса только для AM !
         {
           if (bandwidthIdx > 0) {bandwidthIdx--;}//[0 1 2 3 4 5 6]
           else {bandwidthIdx = 6;}
           rx.setBandwidth(bandwidthIdx, 1);
-          Serial.print("BW: "+String(bandwidth[bandwidthIdx])+" kHz");
+          Serial.println("BW: "+String(bandwidth[bandwidthIdx])+" kHz");
           fill_menu_string(); //обновить нижнюю строку дисплея (меню)
           disp_refresh();
         }
+}
+void bandwidth_ssb_up() {
+      if (bwIdxSSB < 5) {bwIdxSSB++;}//[0 1 2 3 4 5]
+      else {bwIdxSSB = 0;}
+      rx.setSSBAudioBandwidth(bwIdxSSB); //установка полосы SSB
+      Serial.println("BW SSB: "+String(bandwidthSSB[bwIdxSSB])+" kHz");
+      fill_menu_string(); //обновить нижнюю строку дисплея (меню)
+      disp_refresh();
+}
+void bandwidth_ssb_down() {
+      if (bwIdxSSB > 0) {bwIdxSSB--;}//[0 1 2 3 4 5]
+      else {bwIdxSSB = 5;}
+      rx.setSSBAudioBandwidth(bwIdxSSB); //установка полосы SSB
+      Serial.println("BW SSB: "+String(bandwidthSSB[bwIdxSSB])+" kHz");
+      fill_menu_string(); //обновить нижнюю строку дисплея (меню)
+      disp_refresh();
+}
+void bandwidth_up() { //распределитель BW-UP
+  if(ssbLoaded){
+    bandwidth_ssb_up();
+  } else {
+    bandwidth_am_up();
+  }
+}
+void bandwidth_down() { //распределитель BW-DOWN
+  if(ssbLoaded){
+    bandwidth_ssb_down();
+  } else {
+    bandwidth_am_down();
+  }
 }
 
 void volume_up() {
@@ -243,23 +275,16 @@ void ssb_off(){
 }
 
 void agc_up(){
-  if(++currentAGCAtt>36)currentAGCAtt=36; //увеличение с ограничением до 36
-  //Serial.println("AGCatt="+String(currentAGCAtt));
-  rx.setAutomaticGainControl(0, currentAGCAtt); //включаем - ON
-  disableAgc = 0;
-  fill_menu_string(); //обновить нижнюю строку дисплея (меню)
+  if(currentAGCAtt<35) currentAGCAtt+=5; //увеличение с ограничением до 35
+  //Serial.println("agc_up(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
+  rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
+  showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
 void agc_down(){
-  if(--currentAGCAtt<-1)currentAGCAtt=-1; //уменьшение с ограничением до -1
-  //Serial.println("AGCatt="+String(currentAGCAtt));
-  if(currentAGCAtt==-1){ //если -1 , выключаем AGC
-    rx.setAutomaticGainControl(1, 0); //AGC -> OFF
-    disableAgc = 1;
-  } else {
-    rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
-    disableAgc = 0;
-  }
-  fill_menu_string(); //обновить нижнюю строку дисплея (меню)
+  if(currentAGCAtt>0) currentAGCAtt-=5; //уменьшение с ограничением до 0
+  //Serial.println("agc_down(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
+  rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
+  showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }

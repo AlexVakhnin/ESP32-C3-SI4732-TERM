@@ -7,12 +7,12 @@
 extern SI4735 rx;
 
 volatile int counter = 0;
-int lastStateCLK;
-volatile int encoderFlag=0;//0-стоим на месте, 1-вправо, -1=влево
+bool lastStateCLK = true;
+volatile int encoderFlag=0; //0-стоим на месте, 1-вправо, -1=влево
 
 //Обработка прерывания
 void IRAM_ATTR rotary_encoder() {
-    int currentStateCLK = digitalRead(CLK_PIN);
+    bool currentStateCLK = digitalRead(CLK_PIN);
     if (currentStateCLK != lastStateCLK) {
         if (digitalRead(DT_PIN) != currentStateCLK) {
             counter++;
@@ -31,6 +31,7 @@ void IRAM_ATTR rotary_encoder() {
 void encoder_setup() {
     pinMode(CLK_PIN, INPUT);
     pinMode(DT_PIN, INPUT);
+    lastStateCLK = digitalRead(CLK_PIN); //читаем предыдущее состояние, иначе первый шаг может быть пустой..
     attachInterrupt(digitalPinToInterrupt(CLK_PIN), rotary_encoder, CHANGE);
 }
 

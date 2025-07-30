@@ -423,19 +423,19 @@ void useBand()
     si4735.setFM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
     bfoOn = ssbLoaded = false;
   }
-  else
+  else //НЕ FM
   {
     if (band[bandIdx].bandType == MW_BAND_TYPE || band[bandIdx].bandType == LW_BAND_TYPE)
       si4735.setTuneFrequencyAntennaCapacitor(0);
-    else
+    else // ТУТ SW, SSB
       si4735.setTuneFrequencyAntennaCapacitor(1);
 
-    if (ssbLoaded)
+    if (ssbLoaded) //ТУТ SSB
     {
       si4735.setSSB(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep, currentMode);
       si4735.setSSBAutomaticVolumeControl(1);
     }
-    else //выключаем SSB
+    else //ТУТ ТОЛЬКО SW !!!
     {
       currentMode = AM;
       si4735.reset();

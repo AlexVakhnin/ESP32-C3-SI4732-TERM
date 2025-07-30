@@ -4,11 +4,6 @@
 */
 
 #include <SI4735.h>
-//#include <patch_full.h>    // SSB patch for whole SSBRX full download
-
-//#define RESET_PIN 12
-//#define ESP32_I2C_SDA 21
-//#define ESP32_I2C_SCL 22
 
 #define FM_BAND_TYPE 0
 #define MW_BAND_TYPE 1
@@ -23,7 +18,7 @@
 
 extern SI4735 rx;
 extern bool ssbLoaded;
-extern bool disableAgc;
+//extern uint8_t disableAgc;
 extern uint8_t currentAGCAtt;
 
 // Some variables to check the SI4735 status
@@ -109,13 +104,15 @@ void useBand()
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
 
       //это настройка AGC(АРУ) - большое влияние на качество сигнала на КВ !!!
-      rx.setAutomaticGainControl(disableAgc, currentAGCAtt); //AGC
-      rx.setBandwidth(bandwidthIdx, 1); //полоса согласно индексу, 1-шумодав включен
-      disableAgc = false;
+      currentAGCAtt = 0; //max gain
+      rx.setAutomaticGainControl(0, 0); //включаем AGC
+      bandwidthIdx = 1; //4 kHz для SW
+      rx.setBandwidth(bandwidthIdx, 1); //4 kHz, 1-шумодав включен
       currentMode = AM;
   }
   currentFrequency = band[bandIdx].currentFreq;
   currentStep = band[bandIdx].currentStep;
+  //Serial.println("useBand(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
 }
 
 //установить диапазон SSB
@@ -124,7 +121,7 @@ void useBand_ssb() {
       //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
 
       rx.setSSB(band_ssb[bandIdx_ssb].minimumFreq, band_ssb[bandIdx_ssb].maximumFreq, band_ssb[bandIdx_ssb].currentFreq, band_ssb[bandIdx_ssb].currentStep, band_ssb[bandIdx_ssb].bandType);
-      rx.setSSBAutomaticVolumeControl(1);
+      rx.setSSBAutomaticVolumeControl(1); //уст. при инициплизации в loadSSB() !!!!!
 
       currentFrequency = band_ssb[bandIdx_ssb].currentFreq;
       currentStep = band_ssb[bandIdx_ssb].currentStep;
@@ -164,6 +161,7 @@ void bandDown() {
 /*
 
 //Update receiver settings after changing band and modulation
+//fron ATS-20 radio..
 void applyBandConfiguration(bool extraSSBReset = false)
 {
     g_si4735.setTuneFrequencyAntennaCapacitor(uint16_t(g_bandIndex == SW_BAND_TYPE));
@@ -195,7 +193,7 @@ void applyBandConfiguration(bool extraSSBReset = false)
             maxFreq = SW_LIMIT_HIGH;
         }
 
-        if (g_ssbLoaded) //ПРОШИВКА SSB
+        if (g_ssbLoaded) //ПРОШИВКА SSB ---------------------------------------------
         {
             g_currentBFO = 0; //сброс BFO при переходе на диапазон !!!
             if (extraSSBReset)
@@ -219,7 +217,7 @@ void applyBandConfiguration(bool extraSSBReset = false)
             updateBFO();
             g_si4735.setSSBSoftMute(g_Settings[SettingsIndex::SSM].param);
         }
-        else //НЕ SSB
+        else //НЕ SSB -------------------------------------------------------------------------
         {
             g_currentMode = AM;
             g_si4735.setAM(minFreq,
