@@ -36,7 +36,6 @@ const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content
 bool ssbLoaded = false; //флаг SSB
 int currentBFO = 0;
 uint8_t currentBFOStep = 25;
-//uint8_t disableAgc = 0; //1-выключает AGC (по умолчанию 0-включено)
 uint8_t currentAGCAtt = 0; //0-по умолчанию минимальное влияние AGC (max gain)
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
 uint8_t bwIdxSSB = 2; //3 kHz полоса пропускания сигнала для SSB
@@ -73,13 +72,18 @@ void showStatus()
   if (rx.isCurrentTuneFM()) //если диапазон FM
   {
     Serial.print(String(currentFrequency / 100.0, 2)+" MHz ");
-    Serial.print((rx.getCurrentPilot()) ? "STEREO" : "MONO");
-      disp1=String(currentFrequency / 100.0, 2)+" MHz"; //для дисплея
+    disp1=String(currentFrequency / 100.0, 2)+" MHz"; //для дисплея
+    if(rx.getCurrentPilot()){
+      Serial.print("STEREO");
+      disp2+="ST";
+    } else {
+      Serial.print("MONO");
+    }
   }
-  else  //если диапазон AM
+  else  //если диапазон AM (SW)
   {
     Serial.print(String(currentFrequency)+" kHz");
-      disp1=String(currentFrequency)+" kHz"; //для дисплея
+    disp1=String(currentFrequency)+" kHz"; //для дисплея
   }
   Serial.println(" [SNR:"+String(currSNR)+"/"+String(currRSSI)+"]"); //сигнал/шум -> терминал
   disp3 = "SNR: "+String(currSNR)+"/"+String(currRSSI); //сигнал/шум -> дисплей
@@ -93,7 +97,7 @@ void change_freq_handle(){
   if (currentFrequency != previousFrequency) //ловим событие изменения
     {
       previousFrequency = currentFrequency;
-      delay(30/*300*/); //время для получения правильного SNR, AGC(для меню AGC) 
+      delay(40/*30*/); //время для получения правильного SNR, AGC(для меню AGC) 
                         //т.к если делать в цикле, то идет помеха при обновлении дисплея..
       if(ssbLoaded) currentAGCAtt=0; //т.к. SSB при изменении частоты сам включает AGC...
       showStatus(); //обновим дисплей полностью

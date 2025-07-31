@@ -41,7 +41,7 @@ extern uint8_t bandwidthIdx;
 extern uint8_t bwIdxSSB;
 extern bool ssbLoaded;
 
-const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:", "BFO:", "AGC:"};
+const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:", "bfo:", "AGC:"};
 const int lastMenu = 6-1; //количество в списке меню
 uint8_t menuIdx = 0;
 
@@ -79,7 +79,7 @@ void fill_menu_string(){
         disp4 = "SSB: "+ssbonoff;
     }
     else if(menuIdx==BFO){
-        disp4 = "BFO:";
+        disp4 = "bfo:";
         if(currentBFO > 0) disp4+="+"+String(currentBFO);
         else disp4+=String(currentBFO);
     }
