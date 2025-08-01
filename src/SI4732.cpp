@@ -153,19 +153,16 @@ void loadSSB()
   rx.setI2CStandardMode(); // goes back to default (100kHz)
   disp4="";disp_refresh();
 
-  // delay(50);
   // Parameters
   // 1-AUDIOBW - SSB Audio bandwidth; 0 = 1.2kHz (default); 1=2.2kHz; 2=3kHz; 3=4kHz; 4=500Hz; 5=1kHz;
   // 2-SBCUTFLT SSB - side band cutoff filter for band passand low pass filter ( 0 or 1)
   // 3-AVC_DIVIDER  - set 0 for SSB mode; set 3 for SYNC mode.
   // 4-AVCEN - SSB Automatic Volume Control (AVC) enable; 0=disable; 1=enable (default).
   // 5-SMUTESEL - SSB Soft-mute Based on RSSI or SNR (0 or 1).
-  // 6-DSP_AFCDIS - DSP AFC Disable or enable; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.(АПЧ-ВЫКЛ)
-  //AFC = Automatic Frequency Control..
-  //AVC - выключена, но включается при переключении диапазонов
+  // 6-Automatic Frequency Control; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.(АПЧ-ВЫКЛ)
   //g_si4735.setSSBConfig(g_bandwidthSSB[g_bwIndexSSB].idx, 1, 0, 1, 0, 1); //так в ats-20
   rx.setSSBConfig(bwIdxSSB, 1, 0, 1, 0, 1);
-  delay(25);
+  delay(50);
   ssbLoaded = true; //флаг SSB
 }
 
