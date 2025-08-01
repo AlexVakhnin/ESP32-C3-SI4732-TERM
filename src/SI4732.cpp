@@ -97,7 +97,7 @@ void change_freq_handle(){
   if (currentFrequency != previousFrequency) //ловим событие изменения
     {
       previousFrequency = currentFrequency;
-      delay(40/*30*/); //время для получения правильного SNR, AGC(для меню AGC) 
+      delay(30/*50*/); //время для получения правильного SNR, AGC(для меню AGC) 
                         //т.к если делать в цикле, то идет помеха при обновлении дисплея..
       if(ssbLoaded) currentAGCAtt=0; //т.к. SSB при изменении частоты сам включает AGC...
       showStatus(); //обновим дисплей полностью
@@ -122,16 +122,14 @@ void radio_setup()
     Serial.print("The SI473X I2C address is 0x");
     Serial.println(si4735Addr, HEX);
   }
-  delay(500);
   rx.setup(RESET_PIN, FM_FUNCTION); //стартуем радиоприемник
-
+  delay(100);
   bandIdx=0; //индекс диапазона 0-FM
   useBand(); //включить диапазон из списка -> rx.setFM(8400, 10800, 9860, 10);
-  delay(500);
+  delay(60);
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(45);
   rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
-  delay(300);
   showStatus();
   disp_refresh(); //обновить экран дисплея 
 }
