@@ -21,16 +21,16 @@ void IRAM_ATTR rotary_encoder() {
             counter--;
             encoderFlag=-1; //флаг вращали влево
         }
-        //Serial.print("Position: ");
-        //Serial.println(counter);
+        //Serial.println("counter: "+String(counter)); //DEBUG
     }
     lastStateCLK = currentStateCLK;
+//Serial.println("currentStateCLK: "+String(currentStateCLK)); //DEBUG
 }
 
 //начальные установки для энкодера (Interrupt..)
 void encoder_setup() {
     pinMode(CLK_PIN, INPUT);
-    pinMode(DT_PIN, INPUT);
+    pinMode(DT_PIN, INPUT_PULLUP);
     lastStateCLK = digitalRead(CLK_PIN); //читаем предыдущее состояние, иначе первый шаг может быть пустой..
     attachInterrupt(digitalPinToInterrupt(CLK_PIN), rotary_encoder, CHANGE);
 }
