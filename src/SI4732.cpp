@@ -162,7 +162,7 @@ void loadSSB()
   // 6-Automatic Frequency Control; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.(АПЧ-ВЫКЛ)
   //g_si4735.setSSBConfig(g_bandwidthSSB[g_bwIndexSSB].idx, 1, 0, 1, 0, 1); //так в ats-20
   rx.setSSBConfig(bwIdxSSB, 1, 0, 1, 0, 1);
-  delay(50);
+  delay(100);
   ssbLoaded = true; //флаг SSB
 }
 
@@ -253,7 +253,7 @@ void bfo_down(){
 
 void ssb_on(){
   loadSSB(); //грузим SSB прошивку!
-  bandIdx_ssb=0; //индекс диапазона 0->160m
+  bandIdx_ssb=2; //индекс диапазона 0->40m
   useBand_ssb(); //включить диапазон SSB
   showStatus(); //обновить весь экран дисплея
   disp_refresh();

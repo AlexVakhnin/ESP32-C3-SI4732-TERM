@@ -60,7 +60,7 @@ int bandIdx = 0; //текущий индекс диапазона FM
 Band band_ssb[] = {
   {"160m", LSB, 1800, 3500, 1810, 1}, // 160 meters
   {"80m ", LSB, 3500, 4500, 3500, 1}, // 80 meters
-  {"40m ", LSB, 7000, 7500, 7000, 1}, // 40 meters
+  {"40m ", LSB, 7000, 7500, 7097, 1}, // 40 meters
   {"30m ", USB, 10000, 11000, 10100, 1}, // 30 meters
   {"20m ", USB, 14000, 14500, 14000, 1}, // 20 meters
   {"17m ", USB, 18000, 18300, 18068, 1}, // 17 meters
@@ -121,8 +121,9 @@ void useBand_ssb() {
       //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
 
       rx.setSSB(band_ssb[bandIdx_ssb].minimumFreq, band_ssb[bandIdx_ssb].maximumFreq, band_ssb[bandIdx_ssb].currentFreq, band_ssb[bandIdx_ssb].currentStep, band_ssb[bandIdx_ssb].bandType);
-      rx.setSSBAutomaticVolumeControl(1); //уст. при инициплизации в loadSSB() !!!!!
-
+      rx.setSSBAutomaticVolumeControl(1); //звук - авто
+      rx.setAutomaticGainControl(0, 0); //включаем AGC
+      rx.setSSBAudioBandwidth(2); //установка полосы SSB 3 кГц
       currentFrequency = band_ssb[bandIdx_ssb].currentFreq;
       currentStep = band_ssb[bandIdx_ssb].currentStep;
       currentMode = band_ssb[bandIdx_ssb].bandType; //1-LSB 2-USB
