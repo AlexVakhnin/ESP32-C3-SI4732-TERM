@@ -18,7 +18,7 @@ extern int bandIdx;
 extern void useBand();
 extern int bandIdx_ssb;
 extern void useBand_ssb();
-extern String band_name();
+//extern String band_name();
 extern String band_name_d();
 extern void bandUp();
 extern void bandDown();
@@ -36,15 +36,17 @@ const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content
 bool ssbLoaded = false; //флаг SSB
 int currentBFO = 0;
 uint8_t currentBFOStep = 25;
-uint8_t currentAGCAtt = 0; //0-по умолчанию минимальное влияние AGC (max gain)
+//uint8_t currentAGCAtt = 0; //0-по умолчанию минимальное влияние AGC (max gain)
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
 uint8_t bwIdxSSB = 2; //3 kHz полоса пропускания сигнала для SSB
 
 //текущие параметры
 uint16_t currentFrequency;
 uint16_t previousFrequency;
-int currSNR=0;
-int currRSSI=0;
+uint8_t currSNR=0;
+uint8_t currRSSI=0;
+uint8_t agcGain = 0; //внутренний коэфф. усиления АРУ, его читаем
+uint8_t gainParam = 1; //антенный аттенюатор (capacitor, 0-auto)
 uint8_t currVol=0;
 const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
 uint8_t bandwidthIdx = 1; //4 kHz для SW
@@ -62,6 +64,9 @@ void showStatus()
   rx.getCurrentReceivedSignalQuality(); //для получения SNR, RSSI
   currSNR = rx.getCurrentSNR();
   currRSSI = rx.getCurrentRSSI();
+  rx.getAutomaticGainControl(); //для получения параметров AGC
+  agcGain = rx.getAgcGainIndex();
+
   Serial.print("Band: "+band_name_d()+" ");
   disp2=band_name_d()+" "; //имя диапазона для дисплея
   if(ssbLoaded){ //если SSB
@@ -85,8 +90,10 @@ void showStatus()
     Serial.print(String(currentFrequency)+" kHz");
     disp1=String(currentFrequency)+" kHz"; //для дисплея
   }
+  //3-я строка..
   Serial.println(" [SNR:"+String(currSNR)+"/"+String(currRSSI)+"]"); //сигнал/шум -> терминал
-  disp3 = "SNR: "+String(currSNR)+"/"+String(currRSSI); //сигнал/шум -> дисплей
+  disp3 = "Q:"+String(currSNR)+"/"+String(currRSSI)+"/"+String(agcGain); //quality
+
   fill_menu_string(); //ОБНОВЛЕНИЕ НИЖНЕЙ СТРОКИ ДИСПЛЕЯ (disp4)
 }
 
@@ -99,7 +106,7 @@ void change_freq_handle(){
       previousFrequency = currentFrequency;
       delay(30/*50*/); //время для получения правильного SNR, AGC(для меню AGC) 
                         //т.к если делать в цикле, то идет помеха при обновлении дисплея..
-      if(ssbLoaded) currentAGCAtt=0; //т.к. SSB при изменении частоты сам включает AGC...
+      //if(ssbLoaded) currentAGCAtt=0; //т.к. SSB при изменении частоты сам включает AGC...
       showStatus(); //обновим дисплей полностью
       disp_refresh();
     }
@@ -273,17 +280,28 @@ void ssb_off(){
   disp_refresh();
 }
 
-void agc_up(){
-  if(currentAGCAtt<35) currentAGCAtt+=5; //увеличение с ограничением до 35
-  //Serial.println("agc_up(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
-  rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
+void param_up(){
+  if(gainParam<35) gainParam+=5; //увеличение с ограничением до 35
+  Serial.println("param_up(), gainParam ="+String(gainParam)); //DEBUG
+  //rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
-void agc_down(){
-  if(currentAGCAtt>0) currentAGCAtt-=5; //уменьшение с ограничением до 0
-  //Serial.println("agc_down(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
-  rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
+void param_down(){
+  if(gainParam>0) gainParam-=5; //уменьшение с ограничением до 0
+  Serial.println("param_up(), gainParam ="+String(gainParam)); //DEBUG
+  //rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
+  showStatus(); //обновить весь экран дисплея
+  disp_refresh();
+}
+
+void agc_on(){
+  rx.setAutomaticGainControl(0, 25); //включаем AGC
+  showStatus(); //обновить весь экран дисплея
+  disp_refresh();
+}
+void agc_off(){
+  rx.setAutomaticGainControl(1, 0); //выключаем AGC
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }

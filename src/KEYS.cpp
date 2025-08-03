@@ -31,8 +31,8 @@ extern void ssb_on();
 extern void ssb_off();
 extern void bfo_up();
 extern void bfo_down();
-extern void agc_up();
-extern void agc_down();
+extern void agc_on();
+extern void agc_off();
 
 extern void disp_refresh();
 extern const char *bandwidth[];
@@ -86,12 +86,10 @@ void fill_menu_string(){
     else if(menuIdx==AGC){
         rx.getAutomaticGainControl(); //для получения параметров AGC
         bool agc_en = rx.isAgcEnabled(); //true - если AGC включен
-        int agc_attr = rx.getAgcGainIndex(); //коэффициент усиления внутренний
-        //Serial.println("fill_menu_string(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
         if(agc_en){
-            disp4 ="AGC:"+String(agc_attr) +":"+String(currentAGCAtt);
+            disp4 ="AGC: on";
         }else {
-            disp4 ="AGC:OFF:"+String(currentAGCAtt);
+            disp4 ="AGC: off";
         }
     }
 }
@@ -113,7 +111,7 @@ void event_kr_on(){
     if(menuIdx==BAND) bandUp();
     if(menuIdx==SSB) ssb_on();
     if(menuIdx==BFO) bfo_up();
-    if(menuIdx==AGC) agc_up();
+    if(menuIdx==AGC) agc_on();
 }
 //события от нажатий key-left
 void event_kl_on(){
@@ -122,7 +120,7 @@ void event_kl_on(){
     if(menuIdx==BAND) bandDown();
     if(menuIdx==SSB) ssb_off();
     if(menuIdx==BFO) bfo_down();
-    if(menuIdx==AGC) agc_down();
+    if(menuIdx==AGC) agc_off();
 }
 void event_ku_on(){ //кнопка вращения МЕНЮ
     menu_rotate();

@@ -19,7 +19,7 @@
 extern SI4735 rx;
 extern bool ssbLoaded;
 //extern uint8_t disableAgc;
-extern uint8_t currentAGCAtt;
+//extern uint8_t currentAGCAtt;
 
 // Some variables to check the SI4735 status
 extern uint16_t currentFrequency;
@@ -104,7 +104,6 @@ void useBand()
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
 
       //это настройка AGC(АРУ) - большое влияние на качество сигнала на КВ !!!
-      currentAGCAtt = 0; //max gain
       rx.setAutomaticGainControl(0, 0); //включаем AGC
       bandwidthIdx = 1; //4 kHz для SW
       rx.setBandwidth(bandwidthIdx, 1); //4 kHz, 1-шумодав включен
