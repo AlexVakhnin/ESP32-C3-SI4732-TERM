@@ -137,7 +137,7 @@ void radio_setup()
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(45);
   rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
-  showStatus();
+  showStatus(); //обновим дисплей полностью
   disp_refresh(); //обновить экран дисплея 
 }
 

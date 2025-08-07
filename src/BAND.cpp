@@ -62,7 +62,7 @@ Band band_ssb[] = {
   {"80m ", LSB, 3500, 4500, 3500, 1}, // 80 meters
   {"40m ", LSB, 7000, 7500, 7097, 1}, // 40 meters
   {"30m ", USB, 10000, 11000, 10100, 1}, // 30 meters
-  {"20m ", USB, 14000, 14500, 14000, 1}, // 20 meters
+  {"20m ", USB, 14000, 14500, 14152, 1}, // 20 meters
   {"17m ", USB, 18000, 18300, 18068, 1}, // 17 meters
   {"15m ", USB, 21000, 21900, 21000, 1}, // 15 mters
   {"12m ", USB, 24890, 26200, 24890, 1}, // 12 meters
@@ -109,7 +109,7 @@ void useBand()
       rx.setBandwidth(bandwidthIdx, 1); //4 kHz, 1-шумодав включен
       currentMode = AM;
   }
-  currentFrequency = band[bandIdx].currentFreq;
+  currentFrequency = band[bandIdx].currentFreq; //данные из массива в текущие переменные
   currentStep = band[bandIdx].currentStep;
   //Serial.println("useBand(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
 }
@@ -123,7 +123,7 @@ void useBand_ssb() {
       rx.setSSBAutomaticVolumeControl(1); //звук - авто
       rx.setAutomaticGainControl(0, 0); //включаем AGC
       rx.setSSBAudioBandwidth(2); //установка полосы SSB 3 кГц
-      currentFrequency = band_ssb[bandIdx_ssb].currentFreq;
+      currentFrequency = band_ssb[bandIdx_ssb].currentFreq; //данные из массива в текущие переменные
       currentStep = band_ssb[bandIdx_ssb].currentStep;
       currentMode = band_ssb[bandIdx_ssb].bandType; //1-LSB 2-USB
 }
@@ -131,14 +131,14 @@ void useBand_ssb() {
 //переход по диапазонам вверх
 void bandUp() {
   if(ssbLoaded){
-    band_ssb[bandIdx_ssb].currentFreq = currentFrequency; //сохнаним частоту диапазона SSB
-    if (bandIdx_ssb < lastBand_ssb) { bandIdx_ssb++; } //вращаем вверх диапазон SSB
-    else { bandIdx_ssb = 0; }
+    //band_ssb[bandIdx_ssb].currentFreq = currentFrequency; //сохнаним частоту старого диапазона SSB
+    if (bandIdx_ssb < lastBand_ssb) { bandIdx_ssb++; } //выбираем новый диапазон SSB (вверх)
+    else { bandIdx_ssb = 0; } //переключение по кругу
     useBand_ssb();
   } else {
-    band[bandIdx].currentFreq = currentFrequency; //сохнаним частоту диапазона
-    if (bandIdx < lastBand) { bandIdx++; } //вращаем вверх диапазон
-    else { bandIdx = 0; }
+    band[bandIdx].currentFreq = currentFrequency; //сохнаним частоту старого диапазона
+    if (bandIdx < lastBand) { bandIdx++; } //выбираем новый диапазон (вверх)
+    else { bandIdx = 0; } //переключение по кругу
     useBand();
   }
 }
@@ -146,14 +146,14 @@ void bandUp() {
 //переход по диапазонам вниз
 void bandDown() {
   if(ssbLoaded){
-    band_ssb[bandIdx_ssb].currentFreq = currentFrequency; //сохнаним частоту диапазона SSB
-    if (bandIdx_ssb > 0) { bandIdx_ssb--; } //вращаем вниз диапазон SSB
-    else { bandIdx_ssb = lastBand_ssb; }
+    //band_ssb[bandIdx_ssb].currentFreq = currentFrequency; //сохнаним частоту старого диапазона SSB
+    if (bandIdx_ssb > 0) { bandIdx_ssb--; } //выбираем новый диапазон SSB (вниз)
+    else { bandIdx_ssb = lastBand_ssb; } //переключение по кругу
     useBand_ssb();
   } else {
-    band[bandIdx].currentFreq = currentFrequency; //сохнаним частоту диапазона
-    if (bandIdx > 0) { bandIdx--; }//вращаем вниз диапазон
-    else { bandIdx = lastBand; }
+    band[bandIdx].currentFreq = currentFrequency; //сохнаним частоту старого диапазона
+    if (bandIdx > 0) { bandIdx--; } //выбираем новый диапазон (вниз)
+    else { bandIdx = lastBand; } //переключение по кругу
     useBand();
   }
 }
@@ -199,4 +199,3 @@ void bandDown() {
         g_si4735.setAvcAmMaxGain(g_Settings[SettingsIndex::AutoVolControl].param);
     }
 */
-//g_si4735.setAmSoftMuteMaxAttenuation

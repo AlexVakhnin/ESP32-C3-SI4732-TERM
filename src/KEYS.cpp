@@ -35,6 +35,7 @@ extern void agc_on();
 extern void agc_off();
 
 extern void disp_refresh();
+extern void showStatus();
 extern const char *bandwidth[];
 extern const char *bandwidthSSB[];
 extern uint8_t bandwidthIdx;
@@ -100,7 +101,8 @@ void menu_rotate(){
 
     String smenu = menu[menuIdx];
     Serial.print("MENU->");Serial.println(smenu);
-    fill_menu_string();
+    //fill_menu_string(); //обновить нижнюю строку дисплея (меню)
+    showStatus(); //обновить весь экран дисплея
     disp_refresh();
 }
 
