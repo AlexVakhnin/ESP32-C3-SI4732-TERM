@@ -7,7 +7,7 @@
 extern SI4735 rx;
 
 volatile int counter = 0;
-bool lastStateCLK = true;
+volatile bool lastStateCLK = true;
 volatile int encoderFlag=0; //0-стоим на месте, 1-вправо, -1=влево
 
 //Обработка прерывания
