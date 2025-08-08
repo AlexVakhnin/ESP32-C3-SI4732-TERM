@@ -5,8 +5,8 @@
 
 #include <SI4735.h>
 #include <Wire.h>
-//#include <patch_init.h>    // SSB patch for whole SSBRX full download
-#include <patch_full.h>
+#include <patch_init.h>    // SSB patch for whole SSBRX full download
+//#include <patch_full.h>
 
 // Pin definitions for ESP32C3
 #define RESET_PIN    2  // GPIO8 connected to RST pin of SI4735

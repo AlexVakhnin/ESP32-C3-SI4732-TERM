@@ -52,7 +52,7 @@ Band band[] = {
   {"22m ", SW_BAND_TYPE, 13400, 13900, 13650, 5}, //22
   {"19m ", SW_BAND_TYPE, 15000, 15900, 15665, 5},
   {"18m ", SW_BAND_TYPE, 17200, 17900, 17615, 5},
-  //{"16m ", SW_BAND_TYPE, 18300, 19020, 18300, 5} //дальше нет станций..
+  {"CB  ", SW_BAND_TYPE, 26200, 27900, 26960, 5} // CB band (11 meters)
 };
 const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
 int bandIdx = 0; //текущий индекс диапазона FM
@@ -67,7 +67,7 @@ Band band_ssb[] = {
   {"17m ", USB, 18000, 18300, 18068, 1}, // 17 meters
   {"15m ", USB, 21000, 21900, 21000, 1}, // 15 mters
   {"12m ", USB, 24890, 26200, 24890, 1}, // 12 meters
-  {"CB  ", USB, 26200, 27900, 27500, 1}, // CB band (11 meters)
+//  {"CB  ", USB, 26200, 27900, 27500, 1}, // CB band (11 meters)
   {"10m ", USB, 28000, 30000, 28000, 1} //10m
 };
 const int lastBand_ssb = (sizeof band_ssb / sizeof(Band)) - 1; //количество в списке
