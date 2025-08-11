@@ -67,12 +67,13 @@ Band band_ssb[] = {
   {"17m ", USB, 18000, 18300, 18068, 1}, // 17 meters
   {"15m ", USB, 21000, 21900, 21000, 1}, // 15 mters
   {"12m ", USB, 24890, 26200, 24890, 1}, // 12 meters
-//  {"CB  ", USB, 26200, 27900, 27500, 1}, // CB band (11 meters)
+  {"CB  ", USB, 26200, 27900, 27500, 1}, // CB band (11 meters)
   {"10m ", USB, 28000, 30000, 28000, 1} //10m
 };
 const int lastBand_ssb = (sizeof band_ssb / sizeof(Band)) - 1; //количество в списке
 int bandIdx_ssb = 0; //текущий индекс диапазона SSB
 
+/*
 //название диапазона для терминала
 String band_name(){
   String s="";
@@ -81,6 +82,7 @@ String band_name(){
   s+=String(band[bandIdx].maximumFreq)+"]";
   return s;
 }
+*/
 
 //название диапазона для дисплея
 String band_name_d(){
