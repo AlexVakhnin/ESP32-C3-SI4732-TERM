@@ -1,45 +1,47 @@
 #include <Arduino.h>
 #include <SI4735.h>
 
-//Энкодер KY-040 подключение
-#define CLK_PIN 6 //конденсатор 0.1 мкф (104) на землю ОБЯЗАТЕЛЬНО !!!
-#define DT_PIN 7 //конденсатор 0.1 мкф (104) на землю ОБЯЗАТЕЛЬНО !!!
+#define CLK_PIN 6
+#define DT_PIN 7
 
 extern SI4735 rx;
 
-volatile int counter = 0;
-volatile bool lastStateCLK = true;
-volatile int encoderFlag=0; //0-стоим на месте, 1-вправо, -1=влево
+int counter = 0;
+bool old_CLK = true;
+bool old_old_CLK = true; //антидребезг
+int encoderFlag=0; //0-стоим на месте, 1-вправо, -1=влево
 
-//Обработка прерывания
-void IRAM_ATTR rotary_encoder() {
-    bool currentStateCLK = digitalRead(CLK_PIN);
-    if (currentStateCLK != lastStateCLK) {
-        if (digitalRead(DT_PIN) != currentStateCLK) {
+//опрос ky-040, установка флага движения encoderFlag
+void encoder_polling() {
+    bool curr_CLK = digitalRead(CLK_PIN); //читаем текущее значение CLK
+    if (curr_CLK != old_CLK and old_CLK==old_old_CLK) { //ловим изменение сост. CLK + антидребезг 
+        if (digitalRead(DT_PIN) != curr_CLK) { //анализ DT
             counter++;
-            encoderFlag=1; //флаг вращали вправо
+            encoderFlag=1; //флаг-вращали вправо
         } else {
             counter--;
-            encoderFlag=-1; //флаг вращали влево
+            encoderFlag=-1; //флаг-вращали влево
         }
         //Serial.println("counter: "+String(counter)); //DEBUG
     }
-    lastStateCLK = currentStateCLK;
-//Serial.println("currentStateCLK: "+String(currentStateCLK)); //DEBUG
+    old_old_CLK =old_CLK; //заполняем предыдущие значения CLK
+    old_CLK = curr_CLK;
 }
 
-//начальные установки для энкодера (Interrupt..)
+//начальные установки для энкодера
 void encoder_setup() {
-    pinMode(CLK_PIN, INPUT);
+    pinMode(CLK_PIN, INPUT_PULLUP);
     pinMode(DT_PIN, INPUT_PULLUP);
-    lastStateCLK = digitalRead(CLK_PIN); //читаем предыдущее состояние, иначе первый шаг может быть пустой..
-    attachInterrupt(digitalPinToInterrupt(CLK_PIN), rotary_encoder, CHANGE);
+    old_CLK = digitalRead(CLK_PIN); //читаем предыдущее состояние, иначе первый шаг может быть пустой..
+    old_old_CLK = old_CLK; //антидребезг заполняем тоже
 }
 
 
-//обрабатываем события поворот влево/вправо
+//работа с энкодером из LOOP()
+//без использования прерывания, с применением антидребезга
 void encoder_handle() {
-  // Check if the encoder has moved.
+    encoder_polling(); //опрос ky-040, установка флагв движения encoderFlag
+  //обработка событий вращения энкодера
   if (encoderFlag != 0)
   {
       if (encoderFlag == 1) //флаг вращали вправо
@@ -49,8 +51,4 @@ void encoder_handle() {
 
     encoderFlag = 0; //сброс флага вправо/влево
   }
-}
-
-int encoder_value(){
-    return counter;
 }

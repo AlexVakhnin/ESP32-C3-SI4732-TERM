@@ -104,7 +104,7 @@ void change_freq_handle(){
   if (currentFrequency != previousFrequency) //ловим событие изменения
     {
       previousFrequency = currentFrequency;
-      delay(30/*50*/); //время для получения правильного SNR, AGC(для меню AGC) 
+      delay(10); //время для получения правильного SNR, AGC(для меню AGC) 
                         //т.к если делать в цикле, то идет помеха при обновлении дисплея..
       //if(ssbLoaded) currentAGCAtt=0; //т.к. SSB при изменении частоты сам включает AGC...
       showStatus(); //обновим дисплей полностью

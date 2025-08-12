@@ -73,17 +73,6 @@ Band band_ssb[] = {
 const int lastBand_ssb = (sizeof band_ssb / sizeof(Band)) - 1; //количество в списке
 int bandIdx_ssb = 0; //текущий индекс диапазона SSB
 
-/*
-//название диапазона для терминала
-String band_name(){
-  String s="";
-  s+=String(band[bandIdx].bandName);
-  s+="["+String(band[bandIdx].minimumFreq)+"-";
-  s+=String(band[bandIdx].maximumFreq)+"]";
-  return s;
-}
-*/
-
 //название диапазона для дисплея
 String band_name_d(){
   if (ssbLoaded) return String(band_ssb[bandIdx_ssb].bandName);
