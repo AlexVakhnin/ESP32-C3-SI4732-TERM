@@ -94,7 +94,7 @@ void showStatus()
   Serial.println(" [SNR:"+String(currSNR)+"/"+String(currRSSI)+"]"); //сигнал/шум -> терминал
   disp3 = "Q:"+String(currSNR)+"/"+String(currRSSI)+"/"+String(agcGain); //quality
 
-  fill_menu_string(); //ОБНОВЛЕНИЕ НИЖНЕЙ СТРОКИ ДИСПЛЕЯ (disp4)
+  fill_menu_string(); //ОБНОВЛЕНИЕ НИЖНЕЙ СТРОКИ ДИСПЛЕЯ (МЕНЮ)
 }
 
 //ловим изменение частоты (событие для обновления дисплея)
@@ -304,4 +304,9 @@ void agc_off(){
   rx.setAutomaticGainControl(1, 0); //выключаем AGC
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
+}
+
+void set_step(){
+
+  rx.setFrequencyStep(5);
 }

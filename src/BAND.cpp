@@ -93,10 +93,15 @@ void useBand()
   {
       rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор (как в примере)
       //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
+
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
 
       //это настройка AGC(АРУ) - большое влияние на качество сигнала на КВ !!!
       rx.setAutomaticGainControl(0, 0); //включаем AGC
+
+      //похоже влияет на шорохи при перестройке (глушит, когда нет сигнала...)
+      //rx.setAmSoftMuteMaxAttenuation(4); // Enable Soft Mute [0-32]
+
       bandwidthIdx = 1; //4 kHz для SW
       rx.setBandwidth(bandwidthIdx, 1); //4 kHz, 1-шумодав включен
       currentMode = AM;
@@ -112,8 +117,10 @@ void useBand_ssb() {
       //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
 
       rx.setSSB(band_ssb[bandIdx_ssb].minimumFreq, band_ssb[bandIdx_ssb].maximumFreq, band_ssb[bandIdx_ssb].currentFreq, band_ssb[bandIdx_ssb].currentStep, band_ssb[bandIdx_ssb].bandType);
+
       rx.setSSBAutomaticVolumeControl(1); //звук - авто
-      rx.setAutomaticGainControl(0, 0); //включаем AGC
+      rx.setAutomaticGainControl(0, 0); //включаем AGC (само включает при изм.частоты..)
+      //rx.setSsbSoftMuteMaxAttenuation(0); // Disable Soft Mute for SSB (не глушим)
       rx.setSSBAudioBandwidth(2); //установка полосы SSB 3 кГц
       currentFrequency = band_ssb[bandIdx_ssb].currentFreq; //данные из массива в текущие переменные
       currentStep = band_ssb[bandIdx_ssb].currentStep;
@@ -154,6 +161,7 @@ void bandDown() {
 
 //Update receiver settings after changing band and modulation
 //from ATS-20 radio..
+// !!!вызываем при изменении диапазона и модуляции!!!
 {
     else //НЕ FM (SW, SSB)!!!
     {
