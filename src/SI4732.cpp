@@ -311,7 +311,8 @@ void agc_off(){
 void change_step(){ //меняем (1/5 kHz) для AM, SSB
   if (!rx.isCurrentTuneFM()) { //для всех кроме FM
     if (currentStep==1) currentStep=5;
-    if (currentStep==5) currentStep=1;
+    else if (currentStep==5) currentStep=1;
     rx.setFrequencyStep(currentStep);
+    Serial.println("change_step.currentStep="+String(currentStep));
   }
 }
