@@ -38,7 +38,7 @@ int currentBFO = 0;
 uint8_t currentBFOStep = 25;
 //uint8_t currentAGCAtt = 0; //0-по умолчанию минимальное влияние AGC (max gain)
 const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
-uint8_t bwIdxSSB = 2; //3 kHz полоса пропускания сигнала для SSB
+uint8_t bwIdxSSB = 2; //3 kHz полоса для SSB
 
 //текущие параметры
 uint16_t currentFrequency;
@@ -53,6 +53,7 @@ uint8_t bandwidthIdx = 1; //4 kHz для SW
 
 const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
 uint8_t currentMode = 0; //модуляция 1-LSB 2-USB (для показа на дисплее)
+uint8_t currentStep = 1;
 
 SI4735 rx;
 
@@ -271,11 +272,12 @@ void ssb_off(){
   currentBFO = 0; //в меню что бы был 0
   bandIdx=0; //индекс диапазона 0->FM
   useBand(); //включить диапазон из списка
-  delay(100);
+  delay(10);
   currentFrequency = previousFrequency = rx.getFrequency();
-  rx.setVolume(45);
+  currVol=45;
+  rx.setVolume(currVol);
+  bandwidthIdx = 1;
   rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
-  delay(50);
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
@@ -306,7 +308,10 @@ void agc_off(){
   disp_refresh();
 }
 
-void set_step(){
-
-  rx.setFrequencyStep(5);
+void change_step(){ //меняем (1/5 kHz) для AM, SSB
+  if (!rx.isCurrentTuneFM()) { //для всех кроме FM
+    if (currentStep==1) currentStep=5;
+    if (currentStep==5) currentStep=1;
+    rx.setFrequencyStep(currentStep);
+  }
 }

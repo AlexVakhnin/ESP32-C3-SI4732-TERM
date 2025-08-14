@@ -20,7 +20,7 @@ extern String disp4;
 extern uint8_t currVol;
 extern int currentBFO;
 //extern uint8_t disableAgc;
-extern uint8_t currentAGCAtt;
+//extern uint8_t currentAGCAtt;
 extern void bandUp();
 extern void bandDown();
 extern void bandwidth_up();
@@ -33,6 +33,7 @@ extern void bfo_up();
 extern void bfo_down();
 extern void agc_on();
 extern void agc_off();
+extern void change_step();
 
 extern void disp_refresh();
 extern void showStatus();
@@ -57,7 +58,7 @@ void keys_init(){
   pinMode(KEY_LEFT, INPUT_PULLUP); //входы с резисторами на +3.3
   pinMode(KEY_RIGHT, INPUT_PULLUP);
   pinMode(KEY_UP, INPUT_PULLUP);
-  pinMode(KEY_SW, INPUT); //кнопка энкодера
+  pinMode(KEY_SW, INPUT_PULLUP); //кнопка энкодера
 }
 
 //обновление информации в нижней строке дисплея (меню)
@@ -128,7 +129,8 @@ void event_ku_on(){ //кнопка вращения МЕНЮ
     menu_rotate();
 }
 void event_ks_on(){ //событие кнопки энкодера
-    bandUp(); //изменить диапазон
+    if(ssbLoaded) change_step();
+    else bandUp(); //изменить диапазон
 }
 
 //обработка нажатий кнопок, вызывается из LOOP()

@@ -5,10 +5,10 @@
 
 #include <SI4735.h>
 
-#define FM_BAND_TYPE 0
-#define MW_BAND_TYPE 1
-#define SW_BAND_TYPE 2
-#define LW_BAND_TYPE 3
+//#define FM_BAND_TYPE 0
+//#define MW_BAND_TYPE 1
+//#define SW_BAND_TYPE 2
+//#define LW_BAND_TYPE 3
 
 #define FM 0    // для currentMode
 #define AM 3
@@ -25,15 +25,16 @@ extern bool ssbLoaded;
 extern uint16_t currentFrequency;
 extern uint16_t previousFrequency;
 extern uint8_t currentMode; //модуляция 1-LSB 2-USB
-extern uint8_t bandwidthIdx;
-uint8_t currentStep = 1;
-
+extern uint8_t bandwidthIdx; //полоса SW
+extern uint8_t bwIdxSSB; //полоса SSB
+extern uint8_t currentStep;
+extern int currentBFO;
 
 //структура массивов диапазонов
 typedef struct
 {
   const char *bandName; // Band description
-  uint8_t bandType;     // Band type (FM, MW or SW)
+  uint8_t bandType;     // Модуляция FM, AM
   uint16_t minimumFreq; // Minimum frequency of the band
   uint16_t maximumFreq; // maximum frequency of the band
   uint16_t currentFreq; // Default frequency or current frequency
@@ -42,17 +43,17 @@ typedef struct
 
 //массив для диапазонов FM, SW
 Band band[] = {
-  {"FM  ", FM_BAND_TYPE, 8400, 10800, 10710, 10}, //УКВ
-  {"AM  ", MW_BAND_TYPE, 520, 1720, 1385, 5}, //СВ
-  {"60m ", SW_BAND_TYPE, 4500, 5500, 4850, 5},
-  {"49m ", SW_BAND_TYPE, 5600, 6300, 6000, 5},
-  {"41m ", SW_BAND_TYPE, 6800, 7800, 7295, 5}, // 40 meters
-  {"31m ", SW_BAND_TYPE, 9200, 10000, 9440, 5},
-  {"25m ", SW_BAND_TYPE, 11200, 12500, 12035, 5}, //25
-  {"22m ", SW_BAND_TYPE, 13400, 13900, 13650, 5}, //22
-  {"19m ", SW_BAND_TYPE, 15000, 15900, 15665, 5},
-  {"18m ", SW_BAND_TYPE, 17200, 17900, 17615, 5},
-  {"CB  ", SW_BAND_TYPE, 26200, 27900, 26960, 5} // CB band (11 meters)
+  {"FM  ", FM, 8400, 10800, 10710, 10}, //УКВ
+  {"AM  ", AM, 520, 1720, 1385, 5}, //СВ
+  {"60m ", AM, 4500, 5500, 4850, 5},
+  {"49m ", AM, 5600, 6300, 6000, 5},
+  {"41m ", AM, 6800, 7800, 7295, 5}, // 40 meters
+  {"31m ", AM, 9200, 10000, 9440, 5},
+  {"25m ", AM, 11200, 12500, 12035, 5}, //25
+  {"22m ", AM, 13400, 13900, 13650, 5}, //22
+  {"19m ", AM, 15000, 15900, 15665, 5},
+  {"18m ", AM, 17200, 17900, 17615, 5},
+  {"CB  ", AM, 26200, 27900, 26960, 5} // CB band (11 meters)
 };
 const int lastBand = (sizeof band / sizeof(Band)) - 1; //количество в списке
 int bandIdx = 0; //текущий индекс диапазона FM
@@ -83,32 +84,24 @@ String band_name_d(){
 //установить диапазон FM. SW
 void useBand()
 {
-  if (band[bandIdx].bandType == FM_BAND_TYPE) //для FM(УКВ) диапазона
+  if (band[bandIdx].bandType == FM) //для FM(УКВ) диапазона
   {
-    currentMode = FM;
-    rx.setTuneFrequencyAntennaCapacitor(0); //антенный аттенюатор - автоматически
+    rx.setTuneFrequencyAntennaCapacitor(0); //антенный аттенюатор - автоматически (рекоменд.!)
     rx.setFM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
   }
   else // для SW(КВ) диаизонов
   {
       rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор (как в примере)
-      //rx.setTuneFrequencyAntennaCapacitor(0); //КВ - автоматически антенный аттенюатор (рекоменд.!)
-
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
 
-      //это настройка AGC(АРУ) - большое влияние на качество сигнала на КВ !!!
-      rx.setAutomaticGainControl(0, 0); //включаем AGC
-
-      //похоже влияет на шорохи при перестройке (глушит, когда нет сигнала...)
-      //rx.setAmSoftMuteMaxAttenuation(4); // Enable Soft Mute [0-32]
-
-      bandwidthIdx = 1; //4 kHz для SW
+      rx.setAutomaticGainControl(0, 0); //включаем AGC(АРУ)
+      //rx.setAmSoftMuteMaxAttenuation(4); // глушит шум, когда нет сигнала... [0-32]
+      bandwidthIdx = 1;
       rx.setBandwidth(bandwidthIdx, 1); //4 kHz, 1-шумодав включен
-      currentMode = AM;
   }
   currentFrequency = band[bandIdx].currentFreq; //данные из массива в текущие переменные
   currentStep = band[bandIdx].currentStep;
-  //Serial.println("useBand(), urrentAGCAtt ="+String(currentAGCAtt)); //DEBUG
+  currentMode = band[bandIdx].bandType; //0-FM 3-AM
 }
 
 //установить диапазон SSB
@@ -120,8 +113,11 @@ void useBand_ssb() {
 
       rx.setSSBAutomaticVolumeControl(1); //звук - авто
       rx.setAutomaticGainControl(0, 0); //включаем AGC (само включает при изм.частоты..)
-      //rx.setSsbSoftMuteMaxAttenuation(0); // Disable Soft Mute for SSB (не глушим)
-      rx.setSSBAudioBandwidth(2); //установка полосы SSB 3 кГц
+      //rx.setSsbSoftMuteMaxAttenuation(0); // не глушим шум, когда нет сигнала - для SSB
+      bwIdxSSB = 2;
+      rx.setSSBAudioBandwidth(bwIdxSSB); //установка полосы SSB 3 кГц
+      currentBFO = 0;
+      rx.setSSBBfo(currentBFO);
       currentFrequency = band_ssb[bandIdx_ssb].currentFreq; //данные из массива в текущие переменные
       currentStep = band_ssb[bandIdx_ssb].currentStep;
       currentMode = band_ssb[bandIdx_ssb].bandType; //1-LSB 2-USB
