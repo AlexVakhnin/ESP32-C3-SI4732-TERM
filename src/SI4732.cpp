@@ -137,7 +137,7 @@ void radio_setup()
   delay(60);
   currentFrequency = previousFrequency = rx.getFrequency();
   rx.setVolume(45);
-  rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
+  //rx.setBandwidth(bandwidthIdx, 1); //полоса 4 kHz
   showStatus(); //обновим дисплей полностью
   disp_refresh(); //обновить экран дисплея 
 }
@@ -152,15 +152,22 @@ void loadSSB()
   Serial.println("-->Switching to SSB..");
   disp4="Loading..";disp_refresh(); //на время загрузки висит надпись в нижней строке
 
+  if(rx.isCurrentTuneFM()){ //БАГ при загрузке первый раз после FM..
+    bandIdx = 1; //AM!!!
+    useBand();
+    delay(50);
+  }
+
   rx.reset();
-  rx.queryLibraryId();
+  //rx.queryLibraryId(); // Is it really necessary here?  Just powerDown() maigh work!
+  rx.powerDown();
   rx.patchPowerUp();
   delay(50);
   rx.setI2CFastMode(); // Recommended
   rx.downloadPatch(ssb_patch_content, size_content);
   rx.setI2CStandardMode(); // goes back to default (100kHz)
   disp4="";disp_refresh();
-
+  delay(50);
   // Parameters
   // 1-AUDIOBW - SSB Audio bandwidth; 0 = 1.2kHz (default); 1=2.2kHz; 2=3kHz; 3=4kHz; 4=500Hz; 5=1kHz;
   // 2-SBCUTFLT SSB - side band cutoff filter for band passand low pass filter ( 0 or 1)
@@ -170,7 +177,7 @@ void loadSSB()
   // 6-Automatic Frequency Control; 0=SYNC MODE, AFC enable; 1=SSB MODE, AFC disable.(АПЧ-ВЫКЛ)
   //g_si4735.setSSBConfig(g_bandwidthSSB[g_bwIndexSSB].idx, 1, 0, 1, 0, 1); //так в ats-20
   rx.setSSBConfig(bwIdxSSB, 1, 0, 1, 0, 1);
-  delay(100);
+  delay(50);
   ssbLoaded = true; //флаг SSB
 }
 

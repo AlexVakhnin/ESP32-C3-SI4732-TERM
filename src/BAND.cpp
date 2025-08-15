@@ -95,7 +95,7 @@ void useBand()
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
 
       rx.setAutomaticGainControl(0, 0); //включаем AGC(АРУ)
-      //rx.setAmSoftMuteMaxAttenuation(4); // глушит шум, когда нет сигнала... [0-32]
+      //rx.setAmSoftMuteMaxAttenuation(0); // не глушим шум, когда нет сигнала для SW [0-32] (4)
       bandwidthIdx = 1;
       rx.setBandwidth(bandwidthIdx, 1); //4 kHz, 1-шумодав включен
   }
@@ -112,8 +112,8 @@ void useBand_ssb() {
       rx.setSSB(band_ssb[bandIdx_ssb].minimumFreq, band_ssb[bandIdx_ssb].maximumFreq, band_ssb[bandIdx_ssb].currentFreq, band_ssb[bandIdx_ssb].currentStep, band_ssb[bandIdx_ssb].bandType);
 
       rx.setSSBAutomaticVolumeControl(1); //звук - авто
-      rx.setAutomaticGainControl(0, 0); //включаем AGC (само включает при изм.частоты..)
       //rx.setSsbSoftMuteMaxAttenuation(0); // не глушим шум, когда нет сигнала - для SSB
+      rx.setAutomaticGainControl(0, 0); //включаем AGC (само включает при изм.частоты..)
       bwIdxSSB = 2;
       rx.setSSBAudioBandwidth(bwIdxSSB); //установка полосы SSB 3 кГц
       currentBFO = 0;
