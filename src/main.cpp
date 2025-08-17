@@ -8,7 +8,7 @@
 
 
 extern void radio_setup();
-extern void term_handle();
+//extern void term_handle();
 extern void disp_setup();
 extern void keys_init();
 extern void keys_handle();
@@ -31,9 +31,8 @@ void setup() {
 }
 
 void loop() {
-  //term_handle(); //события от клавиатуры терминала T=100
   keys_handle(); //события от кнопок T=50
-  encoder_handle(); //события от поворота энкодера T=0 (по прерыванию)
-  change_freq_handle(); //реакция на изменение частоты приемника T=0 + delay(30)
+  encoder_handle(); //события от поворота энкодера T=0
+  change_freq_handle(); //реакция на изменение частоты приемника T=0 / delay(30)
 }
 

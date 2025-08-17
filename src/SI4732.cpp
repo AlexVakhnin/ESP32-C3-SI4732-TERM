@@ -18,7 +18,6 @@ extern int bandIdx;
 extern void useBand();
 extern int bandIdx_ssb;
 extern void useBand_ssb();
-//extern String band_name();
 extern String band_name_d();
 extern void bandUp();
 extern void bandDown();
@@ -36,9 +35,6 @@ const uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content
 bool ssbLoaded = false; //флаг SSB
 int currentBFO = 0;
 uint8_t currentBFOStep = 25;
-//uint8_t currentAGCAtt = 0; //0-по умолчанию минимальное влияние AGC (max gain)
-const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
-uint8_t bwIdxSSB = 2; //3 kHz полоса для SSB
 
 //текущие параметры
 uint16_t currentFrequency;
@@ -48,12 +44,16 @@ uint8_t currRSSI=0;
 uint8_t agcGain = 0; //внутренний коэфф. усиления АРУ, его читаем
 uint8_t gainParam = 1; //антенный аттенюатор (capacitor, 0-auto)
 uint8_t currVol=0;
+uint8_t currentStep = 1;
+//bool flagCB = false;
+
 const char *bandwidth[] = {"6", "4", "3", "2", "1", "1.8", "2.5"};
 uint8_t bandwidthIdx = 1; //4 kHz для SW
+const char *bandwidthSSB[] = {"1.2", "2.2", "3.0", "4.0", "0.5", "1.0"};//полоса инф. для печати
+uint8_t bwIdxSSB = 2; //3 kHz полоса для SSB
 
 const char *bandModeDesc[] = {"FM ", "LSB", "USB", "AM "};
 uint8_t currentMode = 0; //модуляция 1-LSB 2-USB (для показа на дисплее)
-uint8_t currentStep = 1;
 
 SI4735 rx;
 
@@ -71,8 +71,8 @@ void showStatus()
   Serial.print("Band: "+band_name_d()+" ");
   disp2=band_name_d()+" "; //имя диапазона для дисплея
   if(ssbLoaded){ //если SSB
-    disp2+=String(bandModeDesc[currentMode]);
-    Serial.print(String(bandModeDesc[currentMode])+" ");
+    disp2+=String(bandModeDesc[currentMode]); //добавляем индикацию SSB
+    disp2+=" "+String(currentStep);
   }
 
   if (rx.isCurrentTuneFM()) //если диапазон FM
@@ -320,6 +320,8 @@ void change_step(){ //меняем (1/5 kHz) для AM, SSB
     if (currentStep==1) currentStep=5;
     else if (currentStep==5) currentStep=1;
     rx.setFrequencyStep(currentStep);
-    Serial.println("change_step.currentStep="+String(currentStep));
+    showStatus(); //обновить весь экран дисплея
+    disp_refresh();
+    //Serial.println("change_step.currentStep="+String(currentStep));
   }
 }
