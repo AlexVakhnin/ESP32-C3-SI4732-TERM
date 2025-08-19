@@ -19,8 +19,7 @@ extern SI4735 rx;
 extern String disp4;
 extern uint8_t currVol;
 extern int currentBFO;
-//extern uint8_t disableAgc;
-//extern uint8_t currentAGCAtt;
+extern uint8_t gainParam;
 extern void bandUp();
 extern void bandDown();
 extern void bandwidth_up();
@@ -31,8 +30,8 @@ extern void ssb_on();
 extern void ssb_off();
 extern void bfo_up();
 extern void bfo_down();
-extern void agc_on();
-extern void agc_off();
+extern void agc_param_up();
+extern void agc_param_down();
 extern void change_step();
 
 extern void disp_refresh();
@@ -89,9 +88,9 @@ void fill_menu_string(){
         rx.getAutomaticGainControl(); //для получения параметров AGC
         bool agc_en = rx.isAgcEnabled(); //true - если AGC включен
         if(agc_en){
-            disp4 ="AGC: on";
+            disp4 ="AGC:on "+String(gainParam);//должен быть всегда включен
         }else {
-            disp4 ="AGC: off";
+            disp4 ="AGC:off "+String(gainParam);//только для отладки..
         }
     }
 }
@@ -114,7 +113,7 @@ void event_kr_on(){
     if(menuIdx==BAND) bandUp();
     if(menuIdx==SSB) ssb_on();
     if(menuIdx==BFO) bfo_up();
-    if(menuIdx==AGC) agc_on();
+    if(menuIdx==AGC) agc_param_up();
 }
 //события от нажатий key-left
 void event_kl_on(){
@@ -123,7 +122,7 @@ void event_kl_on(){
     if(menuIdx==BAND) bandDown();
     if(menuIdx==SSB) ssb_off();
     if(menuIdx==BFO) bfo_down();
-    if(menuIdx==AGC) agc_off();
+    if(menuIdx==AGC) agc_param_down();
 }
 void event_ku_on(){ //кнопка вращения МЕНЮ
     menu_rotate();

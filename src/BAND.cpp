@@ -29,6 +29,7 @@ extern uint8_t bandwidthIdx; //полоса SW
 extern uint8_t bwIdxSSB; //полоса SSB
 extern uint8_t currentStep;
 extern int currentBFO;
+extern uint8_t gainParam;
 
 //структура массивов диапазонов
 typedef struct
@@ -93,8 +94,8 @@ void useBand()
   {
       rx.setTuneFrequencyAntennaCapacitor(1); //КВ - ручной антенный аттенюатор (как в примере)
       rx.setAM(band[bandIdx].minimumFreq, band[bandIdx].maximumFreq, band[bandIdx].currentFreq, band[bandIdx].currentStep);
-
-      rx.setAutomaticGainControl(0, 0); //включаем AGC(АРУ)
+      gainParam = 5;
+      rx.setAutomaticGainControl(0, gainParam); //включаем AGC
       //rx.setAmSoftMuteMaxAttenuation(0); // не глушим шум, когда нет сигнала для SW [0-32] (4)
       bandwidthIdx = 1;
       rx.setBandwidth(bandwidthIdx, 1); //4 kHz, 1-шумодав включен
@@ -113,7 +114,8 @@ void useBand_ssb() {
 
       rx.setSSBAutomaticVolumeControl(1); //звук - авто
       //rx.setSsbSoftMuteMaxAttenuation(0); // не глушим шум, когда нет сигнала - для SSB
-      rx.setAutomaticGainControl(0, 0); //включаем AGC (само включает при изм.частоты..)
+      gainParam = 5;
+      rx.setAutomaticGainControl(0, gainParam); //включаем AGC
       bwIdxSSB = 2;
       rx.setSSBAudioBandwidth(bwIdxSSB); //установка полосы SSB 3 кГц
       currentBFO = 0;

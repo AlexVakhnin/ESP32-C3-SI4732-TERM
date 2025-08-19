@@ -42,7 +42,7 @@ uint16_t previousFrequency;
 uint8_t currSNR=0;
 uint8_t currRSSI=0;
 uint8_t agcGain = 0; //внутренний коэфф. усиления АРУ, его читаем
-uint8_t gainParam = 1; //антенный аттенюатор (capacitor, 0-auto)
+uint8_t gainParam = 5; //параметр AGC
 uint8_t currVol=0;
 uint8_t currentStep = 1;
 //bool flagCB = false;
@@ -288,18 +288,18 @@ void ssb_off(){
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
-
-void param_up(){
-  if(gainParam<35) gainParam+=5; //увеличение с ограничением до 35
+//параметр для AGC
+void agc_param_up(){
+  if(gainParam<40) gainParam+=5; //увеличение с ограничением до 40
   Serial.println("param_up(), gainParam ="+String(gainParam)); //DEBUG
-  //rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
+  rx.setAutomaticGainControl(0, gainParam); //включаем с коеффициентом 0-40
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
-void param_down(){
+void agc_param_down(){
   if(gainParam>0) gainParam-=5; //уменьшение с ограничением до 0
   Serial.println("param_up(), gainParam ="+String(gainParam)); //DEBUG
-  //rx.setAutomaticGainControl(0, currentAGCAtt); //включаем с коеффициентом 0-36
+  rx.setAutomaticGainControl(0, gainParam); //включаем с коеффициентом 0-40
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
@@ -309,6 +309,7 @@ void agc_on(){
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
+//Нет смысла отключать AGC(SSB его включает, на КВ без него хуже..)
 void agc_off(){
   rx.setAutomaticGainControl(1, 0); //выключаем AGC
   showStatus(); //обновить весь экран дисплея
