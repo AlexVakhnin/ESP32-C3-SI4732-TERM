@@ -292,14 +292,24 @@ void ssb_off(){
 void agc_param_up(){
   if(gainParam<40) gainParam+=5; //увеличение с ограничением до 40
   Serial.println("param_up(), gainParam ="+String(gainParam)); //DEBUG
-  rx.setAutomaticGainControl(0, gainParam); //включаем с коеффициентом 0-40
+  if(gainParam==40) {
+    rx.setAutomaticGainControl(0, gainParam);
+    rx.setTuneFrequencyAntennaCapacitor(0); //входной аттерюатор - АВТО
+  } else {
+    rx.setAutomaticGainControl(0, gainParam); //включаем с коеффициентом 0-40
+  }
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
 void agc_param_down(){
   if(gainParam>0) gainParam-=5; //уменьшение с ограничением до 0
   Serial.println("param_up(), gainParam ="+String(gainParam)); //DEBUG
-  rx.setAutomaticGainControl(0, gainParam); //включаем с коеффициентом 0-40
+  if(gainParam==0) {
+    rx.setAutomaticGainControl(1, gainParam); //выключаем
+  } else {
+    rx.setAutomaticGainControl(0, gainParam); //включаем с коеффициентом 0-40
+    rx.setTuneFrequencyAntennaCapacitor(1); //для КВ
+  }
   showStatus(); //обновить весь экран дисплея
   disp_refresh();
 }
