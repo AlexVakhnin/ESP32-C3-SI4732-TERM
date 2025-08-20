@@ -238,14 +238,14 @@ void volume_up() {
         rx.volumeUp(); //звук+
         currVol = rx.getCurrentVolume();
         Serial.println("Vol[0-63]="+String(currVol));
-        fill_menu_string(); //обновить нижнюю строку дисплея (меню)
+        showStatus(); //обновить весь экран дисплея
         disp_refresh();
 }
 void volume_down() {
         rx.volumeDown();
         currVol = rx.getCurrentVolume();
         Serial.println("Vol[0-63]="+String(currVol));
-        fill_menu_string(); //обновить нижнюю строку дисплея (меню)
+        showStatus(); //обновить весь экран дисплея
         disp_refresh();
 }
 
