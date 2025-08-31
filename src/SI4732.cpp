@@ -71,11 +71,6 @@ void showStatus()
   Serial.print("Band: "+band_name_d()+" ");
   disp2=band_name_d()+" "; //имя диапазона для дисплея
 
-  //if(ssbLoaded){ //если SSB
-  //  disp2+=String(bandModeDesc[currentMode]); //добавляем индикацию SSB
-  //  disp2+=" "+String(currentStep);
-  //}
-  //else 
   if (rx.isCurrentTuneFM()) //если диапазон FM
   {
     Serial.print(String(currentFrequency / 100.0, 2)+" MHz ");
@@ -330,6 +325,7 @@ void agc_off(){
   disp_refresh();
 }
 
+//меням шаг 1/5
 void change_step(){ //меняем (1/5 kHz) для AM, SSB
   if (!rx.isCurrentTuneFM()) { //для всех кроме FM
     if (currentStep==1) currentStep=5;

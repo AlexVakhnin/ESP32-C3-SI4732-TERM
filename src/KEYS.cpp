@@ -128,9 +128,7 @@ void event_ku_on(){ //кнопка вращения МЕНЮ
     menu_rotate();
 }
 void event_ks_on(){ //событие кнопки энкодера
-    //if(!rx.isCurrentTuneFM()) 
     change_step();
-    //else bandUp(); //изменить диапазон
 }
 
 //обработка нажатий кнопок, вызывается из LOOP()
