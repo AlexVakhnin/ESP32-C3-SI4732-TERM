@@ -70,11 +70,12 @@ void showStatus()
 
   Serial.print("Band: "+band_name_d()+" ");
   disp2=band_name_d()+" "; //имя диапазона для дисплея
-  if(ssbLoaded){ //если SSB
-    disp2+=String(bandModeDesc[currentMode]); //добавляем индикацию SSB
-    disp2+=" "+String(currentStep);
-  }
 
+  //if(ssbLoaded){ //если SSB
+  //  disp2+=String(bandModeDesc[currentMode]); //добавляем индикацию SSB
+  //  disp2+=" "+String(currentStep);
+  //}
+  //else 
   if (rx.isCurrentTuneFM()) //если диапазон FM
   {
     Serial.print(String(currentFrequency / 100.0, 2)+" MHz ");
@@ -86,11 +87,14 @@ void showStatus()
       Serial.print("MONO");
     }
   }
-  else  //если диапазон AM (SW)
+  else  //если диапазон SW включая SSB
   {
     Serial.print(String(currentFrequency)+" kHz");
     disp1=String(currentFrequency)+" kHz"; //для дисплея
+    disp2+=String(bandModeDesc[currentMode]); //добавляем индикацию mode
+    disp2+=" "+String(currentStep);
   }
+
   //3-я строка..
   Serial.println(" [SNR:"+String(currSNR)+"/"+String(currRSSI)+"]"); //сигнал/шум -> терминал
   disp3 = "Q:"+String(currSNR)+"/"+String(currRSSI)+"/"+String(agcGain); //quality
