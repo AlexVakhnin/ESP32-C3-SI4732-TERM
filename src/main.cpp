@@ -32,7 +32,7 @@ void setup() {
 
 void loop() {
   keys_handle(); //события от кнопок T=50
-  encoder_handle(); //события от поворота энкодера T=0
+  encoder_handle(); //события от поворота энкодера T=25
   change_freq_handle(); //реакция на изменение частоты приемника T=0 / delay(30)
 }
 
