@@ -3,7 +3,7 @@
 
 #define CLK_PIN 6
 #define DT_PIN 7
-#define POLL_PERIOD 25
+#define POLL_PERIOD 20
 
 extern SI4735 rx;
 
