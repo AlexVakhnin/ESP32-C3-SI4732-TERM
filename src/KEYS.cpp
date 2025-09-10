@@ -41,6 +41,7 @@ extern const char *bandwidthSSB[];
 extern uint8_t bandwidthIdx;
 extern uint8_t bwIdxSSB;
 extern bool ssbLoaded;
+extern int freqMarker; //указатель частоты внутри диапазона в процентах
 
 const char *menu[] = {"Vol:", "BW:", "Band:", "SSB:", "bfo:", "AGC:"};
 const int lastMenu = 6-1; //количество в списке меню
@@ -73,7 +74,7 @@ void fill_menu_string(){
         }
     }
     else if(menuIdx==BAND){
-        disp4 = "Band: +/-";
+        disp4 = "Band: "+String(freqMarker)+"%";
     }
     else if(menuIdx==SSB){
         String ssbonoff = (ssbLoaded) ? ("on") : ("off");

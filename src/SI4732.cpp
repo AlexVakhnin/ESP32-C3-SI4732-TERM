@@ -27,6 +27,7 @@ extern String disp2;
 extern String disp3;
 extern String disp4;
 extern void fill_menu_string();
+extern void calc_marker();
 
 void change_freq_handle();
 
@@ -39,6 +40,7 @@ uint8_t currentBFOStep = 25;
 //текущие параметры
 uint16_t currentFrequency;
 uint16_t previousFrequency;
+int freqMarker=999; //указатель частоты внутри диапазона в процентах
 uint8_t currSNR=0;
 uint8_t currRSSI=0;
 uint8_t agcGain = 0; //внутренний коэфф. усиления АРУ, его читаем
@@ -107,6 +109,7 @@ void change_freq_handle(){
       //delay(10); //время для получения правильного SNR, AGC(для меню AGC) 
                         //т.к если делать в цикле, то идет помеха при обновлении дисплея..
       //if(ssbLoaded) currentAGCAtt=0; //т.к. SSB при изменении частоты сам включает AGC...
+      calc_marker();
       showStatus(); //обновим дисплей полностью
       disp_refresh();
     }

@@ -5,11 +5,6 @@
 
 #include <SI4735.h>
 
-//#define FM_BAND_TYPE 0
-//#define MW_BAND_TYPE 1
-//#define SW_BAND_TYPE 2
-//#define LW_BAND_TYPE 3
-
 #define FM 0    // для currentMode
 #define AM 3
 #define LSB 1
@@ -24,12 +19,15 @@ extern bool ssbLoaded;
 // Some variables to check the SI4735 status
 extern uint16_t currentFrequency;
 extern uint16_t previousFrequency;
+extern int freqMarker; //указатель частоты внутри диапазона в процентах
 extern uint8_t currentMode; //модуляция 1-LSB 2-USB
 extern uint8_t bandwidthIdx; //полоса SW
 extern uint8_t bwIdxSSB; //полоса SSB
 extern uint8_t currentStep;
 extern int currentBFO;
 extern uint8_t gainParam;
+
+void calc_marker(); //declaration
 
 //структура массивов диапазонов
 typedef struct
@@ -104,6 +102,7 @@ void useBand()
   currentFrequency = band[bandIdx].currentFreq; //данные из массива в текущие переменные
   currentStep = band[bandIdx].currentStep;
   currentMode = band[bandIdx].bandType; //0-FM 3-AM
+  calc_marker();
 }
 
 //установить диапазон SSB
@@ -124,6 +123,7 @@ void useBand_ssb() {
       currentFrequency = band_ssb[bandIdx_ssb].currentFreq; //данные из массива в текущие переменные
       currentStep = band_ssb[bandIdx_ssb].currentStep;
       currentMode = band_ssb[bandIdx_ssb].bandType; //1-LSB 2-USB
+      calc_marker();
 }
 
 //переход по диапазонам вверх
@@ -153,6 +153,22 @@ void bandDown() {
     if (bandIdx > 0) { bandIdx--; } //выбираем новый диапазон (вниз)
     else { bandIdx = lastBand; } //переключение по кругу
     useBand();
+  }
+}
+
+//вычисление указателя частоты (freqMarker) в процентах относительно границ диапазона
+void calc_marker(){
+  if(ssbLoaded){
+    float band_window = band_ssb[bandIdx_ssb].maximumFreq - band_ssb[bandIdx_ssb].minimumFreq;
+    float band_freq = currentFrequency - band_ssb[bandIdx_ssb].minimumFreq;
+    float p = band_freq / band_window * 100;
+    freqMarker = (int)p;
+  } else {
+    float band_window = band[bandIdx].maximumFreq - band[bandIdx].minimumFreq;
+    float band_freq = currentFrequency - band[bandIdx].minimumFreq;
+    float p = (band_freq / band_window) * 100;
+    //Serial.println("band_window="+String(band_window)+" band_freq="+String(band_freq)+" freqMarker="+String(p));
+    freqMarker = (int)p;
   }
 }
 
